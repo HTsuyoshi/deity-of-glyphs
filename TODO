@@ -1,0 +1,95 @@
+1.   [ ] - Show buff information in TeamEditorView
+2.   [ ] - Create MELEE
+3.   [X] - How to use italic and bold (textStyle())
+3.1. [X] - Italic upgrade
+3.2. [ ] - Bold upgrade
+4.   [ ] - Upgrade Capital Characters
+5.   [ ] - Mudar a cor do jogo gradualmetne
+9.   [ ] - Create background
+10.  [ ] - Create animation for changing team
+12.  [ ] - Create upgrade sandevistan
+14.  [ ] - Fix bullet velocity
+15.  [ ] - Find a font that supports italic and bold
+19.  [X] - Create Achievement pop up
+
+Fix anti alias
+rect(round(x), round(y), ceil(colWidths[i]), ceil(rowHeights[j])); 
+
+Fundo linhas de caderno
+7 chefes (formulas)
+PI kamehameha
+O pi fica quicando e quando escosta o chefe atira mais como um sinalizador quando o chefe vai atacar
+
+
+Lser
+
+```js
+let player, enemy;
+let shot = null;
+
+function setup() {
+  createCanvas(800, 500);
+
+  player = { x: 100, y: height / 2, r: 15 };
+  enemy  = { x: 600, y: height / 2, r: 20, alive: true };
+}
+
+function draw() {
+  background(20);
+
+  // player
+  fill(0, 200, 255);
+  circle(player.x, player.y, player.r * 2);
+
+  // inimigo
+  if (enemy.alive) {
+    fill(255, 80, 80);
+    circle(enemy.x, enemy.y, enemy.r * 2);
+  }
+
+  // laser do tiro
+  if (shot) {
+    stroke(255, 0, 0);
+    push();
+    strokeWeight(20);
+    line(player.x, player.y, shot.x, shot.y);
+    pop();
+    shot.life--;
+    if (shot.life <= 0) shot = null;
+  }
+}
+
+function mousePressed() {
+  shoot();
+}
+
+function shoot() {
+  const ox = player.x;
+  const oy = player.y;
+  const dx = mouseX - ox;
+  const dy = mouseY - oy;
+  const len = sqrt(dx * dx + dy * dy);
+
+  const stepX = dx / len;
+  const stepY = dy / len;
+
+  let x = ox;
+  let y = oy;
+
+  for (let i = 0; i < len; i += 1) {
+    x += stepX * 1;
+    y += stepY * 1;
+
+    // colisão com inimigo
+    if (enemy.alive && dist(x, y, enemy.x, enemy.y) < enemy.r) {
+      console.log('acertou');
+      enemy.alive = false;
+      shot = { x, y, life: 5 };
+      return;
+    }
+  }
+
+  // tiro sem acertar
+  shot = { x: mouseX, y: mouseY, life: 5 };
+}
+```
