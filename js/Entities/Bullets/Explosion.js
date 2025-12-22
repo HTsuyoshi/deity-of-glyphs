@@ -11,12 +11,14 @@ class Explosion extends SolidBullet {
     this.size = this.base_size;
     this.already_hit = [];
 
-    this.img = game.images['star_2'];
+    this.img = game.images['star'];
     this.off = 0;
     this.timer = random(2, 3);
     this.explosion_duration = 1;
     this.rot_vel = random(HALF_PI, PI * 2) * random_sign();
     this.rot = 0;
+
+    this.play_sound = true;
   }
 
   // p5js
@@ -39,6 +41,10 @@ class Explosion extends SolidBullet {
       this.attributes.vel.mult(0.95);
       this.walk();
       return;
+    }
+    if (this.timer <= 0 && this.play_sound) {
+      game.sounds['explosion'].play();
+      this.play_sound = false;
     }
 
     this.explosion_duration -= deltaTime / 1000;

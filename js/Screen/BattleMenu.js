@@ -7,13 +7,13 @@ class BattleMenu extends Screen {
     // Buttons
     this.resume = new TextButton(
       'Resume',
-      createVector(0, - BUTTON_WIDTH * .25),
-      createVector(BUTTON_WIDTH, BUTTON_HEIGHT)
+      { x: 0, y: - BUTTON_WIDTH * .25 },
+      { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
     )
     this.exit = new TextButton(
       'Exit',
-      createVector(0, BUTTON_WIDTH * .25),
-      createVector(BUTTON_WIDTH, BUTTON_HEIGHT)
+      { x: 0, y: - BUTTON_WIDTH * .25 },
+      { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
     )
 
     this.buttons = [];

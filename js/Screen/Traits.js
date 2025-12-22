@@ -10,8 +10,8 @@ class Traits extends Screen {
   setup_ui() {
     this.return = new TextButton(
       '<',
-      createVector(0, 0),
-      createVector(50, 50),
+      { x: 0, y: 0 },
+      { x: SQUARE_BUTTON, y: SQUARE_BUTTON },
       true
     );
 

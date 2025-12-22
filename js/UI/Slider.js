@@ -1,19 +1,19 @@
 class Slider extends Prop {
-  constructor(text, pos, length) {
+  constructor(text, pos, length, value) {
     super();
     this.text = text;
     this.pos = pos;
-    this.size = createVector(length, 10);
+    this.size = { x: length, y: 10 };
 
     this.gap = SHADOW_GAP;
     this.gap_max = SHADOW_GAP;
 
-    this.bar = 0;
+    this.bar = length * value;
     this.hover_bar = 0;
   }
 
   get value() {
-    return this.bar / this.length;
+    return this.bar / this.size.x;
   }
 
   draw() {

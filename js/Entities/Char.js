@@ -4,31 +4,24 @@ class Char extends Entity {
     this.attributes.team = team;
     this.attributes.trait = get_trait(char);
     this.char = char;
-    this.ghost = [];
   }
 
   setup() {
     for (const k in this.attributes.upgrades)
       this.attributes.upgrades[k] = 0;
     if (this.attributes.team === PLAYER_TEAM) {
-      //this.attributes.style = STYLE_BOLD;
-      this.attributes.max_health = 99999;
-      this.attributes.ammo = 20;
-      this.attributes.weapon = ATTACK_EXPLOSIONS;
+      this.attributes.style = STYLE_ITALIC;
+      //this.attributes.max_health = 99999;
+      this.attributes.ammo = 10;
       //this.attributes.weapon = ATTACK_LASER;
+      //this.attributes.weapon = ATTACK_EXPLOSIONS;
     }
 
     if (this.attributes.team === ENEMY_TEAM) {
-      this.attributes.max_health = 99999;
-      this.attributes.ammo = 20;
-      this.attributes.weapon = ATTACK_LASER;
+      //this.attributes.ammo = 20;
+      //this.attributes.max_health = 99999;
+      //this.attributes.weapon = ATTACK_LASER;
     }
-    // Create a function to move the character towards the enemy
-
-
-    this.layer = createFramebuffer();
-    this.layer.resize(ceil(CHARACTER_SIZE), ceil(CHARACTER_SIZE));
-    this.layer_img = null;
   }
 
   update_action() {
@@ -123,10 +116,6 @@ class Char extends Entity {
           this.attributes.current_ammo--;
         }
         break;
-      case ATTACK_SEMI_AUTO:
-        recoil.add(this.shoot(target)).mult(0.3);
-        this.attributes.current_ammo--;
-        break;
       case ATTACK_AUTO:
         recoil.add(this.shoot(target)).mult(0.1);
         this.attributes.current_ammo--;
@@ -138,6 +127,10 @@ class Char extends Entity {
         break;
       case ATTACK_EXPLOSIONS:
         recoil.add(this.shoot(target)).mult(0);
+        this.attributes.current_ammo--;
+        break;
+      default:
+        recoil.add(this.shoot(target)).mult(0.3);
         this.attributes.current_ammo--;
         break;
     }

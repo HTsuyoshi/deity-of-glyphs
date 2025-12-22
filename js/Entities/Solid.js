@@ -2,7 +2,6 @@ class Solid {
   overlap(target) {
     if (this.attributes.pos.dist(target.attributes.pos) < 20) return true;
     return false;
-    // TODO: Improve overlap calculation
   }
 
   walk() {

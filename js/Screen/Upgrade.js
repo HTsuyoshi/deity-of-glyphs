@@ -1,5 +1,3 @@
-// Bold
-// Italic
 // Font
 // Palindromo
 // Anagrama
@@ -19,43 +17,36 @@ class Upgrade extends Screen {
       shot: { src: 'upgrades/shot.png', img: null },
       laser: { src: 'upgrades/laser.png', img: null },
       explosion: { src: 'upgrades/explosion.png', img: null },
-      guided: { src: 'upgrades/guided.png', img: null },
+      sniper: { src: 'upgrades/sniper.png', img: null },
+      //kamikaze: { src: 'upgrades/sniper.png', img: null },
       bold: { src: 'upgrades/bold.png', img: null },
       italic: { src: 'upgrades/italic.png', img: null },
       uppercase: { src: 'upgrades/uppercase.png', img: null },
+      underline: { src: 'upgrades/underline.png', img: null },
     };
   }
 
   setup_ui() {
     this.skip = new TextButton(
       'Skip',
-      createVector(0, 0),
-      createVector(textWidth('Skip') + 20, SQUARE_BUTTON)
+      { x: 0, y: 0 },
+      { x: textWidth('Skip') + 20, y: SQUARE_BUTTON },
     )
 
     this.buttons = [];
     this.buttons.push(this.skip);
+    this.reset_upgrades();
+
     this.resize();
   }
 
   reset_upgrades() {
     this.upgrades = [];
     let size = createVector(250, 200);
-    let pos = createVector(
-      0,
-      WINDOW_TOP
-    );
-    //if (!CELLPHONE) {
-    //  size = createVector(150, 300);
-    //  pos = createVector(
-    //    WINDOW_LEFT + (card_position * width / total_cards),
-    //    WINDOW_TOP - this.size.y/2
-    //  );
-    //}
     for (let i=3; i>0;i--) {
       this.upgrades.push(
         new UpgradeCard(
-          createVector(0, pos.y + (i * height / 4)),
+          createVector(0, 0),
           size,
           i * .5,
           this.random_upgrade(),
@@ -63,6 +54,8 @@ class Upgrade extends Screen {
         )
       );
     }
+
+    this.resize();
   }
 
   // p5js
@@ -77,19 +70,23 @@ class Upgrade extends Screen {
   }
 
   mouseClicked() {
-    if (this.skip) return STATE_BATTLE;
+    if (this.skip.hover()) return STATE_BATTLE;
 
     for (const v of this.upgrades) {
       if (v.hover()) {
+        game.sounds['upgrade'].play();
         upgrades.push(v.upgrade);
-        this.reset_upgrades();
         return STATE_BATTLE;
       }
     }
   }
 
   resize() {
-    // TODO: Create resize for upgrade cards
+    const len = this.upgrades.length;
+    for (let i=3; i>0; i--) {
+      this.upgrades[len - i].resize(0, WINDOW_TOP + (i * height * .25));
+    }
+
     this.skip.resize(
       WINDOW_LEFT + ((textWidth('Skip') + 20) * .5) + 20,
       WINDOW_TOP + (SQUARE_BUTTON * .5) + 20
@@ -113,7 +110,6 @@ class Upgrade extends Screen {
         )
       }
     }
-    // TODO: Same style apearing
 
     available_upgrades.forEach((u) => u.trait = trait);
 
@@ -122,12 +118,16 @@ class Upgrade extends Screen {
       .filter(char => char.attributes.trait === trait)
       .map(char => char.attributes.weapon))];
 
+    // Remove repeated styles
     const styles = [... new Set(team
       .filter(char => char.attributes.trait === trait)
       .map(char => char.attributes.style))];
 
     available_upgrades = available_upgrades.filter(upgrade => !weapons.includes(upgrade.weapon));
     available_upgrades = available_upgrades.filter(upgrade => !styles.includes(upgrade.style));
+    // Remove style Upper case if trait is special
+    if (trait === 'special' || trait === 'number')
+      available_upgrades = available_upgrades.filter(upgrade => upgrade.style !== STYLE_UPPERCASE);
 
     if (this.upgrades.length > 0) {
       // Do not repeat upgrades

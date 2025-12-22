@@ -4,7 +4,6 @@ class GeneralButton extends Prop {
     this.pos = pos;
     this.size = size;
     this.active = active;
-    //TODO: Buttons changing colr only in settings
     this.gap_max = SHADOW_GAP;
     this.gap = 0;
     this.on_top = false;
@@ -44,7 +43,6 @@ class GeneralButton extends Prop {
 
     if (this.layer_img === null &&
       this.gap === SHADOW_GAP) this.freeze();
-      //else if (!this.active && this.gap === 0) this.freeze();
   }
 
   freeze() { 
@@ -64,12 +62,18 @@ class GeneralButton extends Prop {
   mouseMoved () { this.update_button(); }
   touchStarted() { this.update_button(); }
   touchMoved() { this.update_button(); }
-  touchEnded() { this.update_button(); }
+  touchEnded() { this.update_button(true); }
 
-  update_button() {
+  update_button(stop = false) {
     if (this.active) {
-      if (this.hover()) this.on_top = true;
-      if (!this.hover()) this.on_top = false;
+      if (this.hover()) {
+        this.on_top = true;
+        if (stop) {
+          this.on_top = false;
+        }
+      } else {
+        this.on_top = false;
+      }
     }
   }
 
@@ -180,14 +184,13 @@ class ImageButton extends GeneralButton {
   }
 
   draw_content() {
-    // TODO: Fix images in achievements screen buttons
     if (this.active) {
       image(
         this.image,
-        this.pos.x - (this.size.x * .5) - this.gap,
-        this.pos.y - (this.size.y * .5) - this.gap,
-        this.size.x,
-        this.size.y
+        this.pos.x - ((this.size.x - 4) * .5) - this.gap,
+        this.pos.y - ((this.size.y - 4) * .5) - this.gap,
+        (this.size.x - 4),
+        (this.size.y - 4)
       );
       return;
     }

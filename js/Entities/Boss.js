@@ -29,10 +29,9 @@ class Boss extends Char {
     }
     if (this.attributes.team === ENEMY_TEAM) {
       // REMOVE
-      this.attributes.max_health = 99999;
+      //this.attributes.max_health = 99999;
     }
   }
-  next_action() { return ACTION_WALK; }
 
   // p5js
   update() {

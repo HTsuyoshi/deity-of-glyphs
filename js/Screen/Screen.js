@@ -7,9 +7,10 @@ class Screen {
     this.buttons = [];
   }
 
-  async load(audio_folder, image_folder) {
+  load(image_folder) {
     for (const k in this.images)
-      this.images[k].img = await loadImage(`${image_folder}/${this.images[k].src}`);
+      if ('src' in this.images[k])
+        this.images[k].img = loadImage(`${image_folder}/${this.images[k].src}`);
   }
 
   setup() { this.setup_ui(); }
@@ -24,18 +25,21 @@ class Screen {
 
   update() {
     for (const b of this.buttons) b.update();
-    //if(Object.keys(this.animations).length > 0) this.update_animation(this.animations);
-    //if(this.combos.length > 0) this.update_animation(this.combos);
   }
 
   resize() {}
 
   mouseClicked () {}
-  mouseMoved () { for (const v of Object.values(this.buttons)) v.mouseMoved() }
+  mouseMoved () {
+    for (const v of Object.values(this.buttons)) v.mouseMoved()
+  }
   
-  touchStart() { for (const v of Object.values(this.buttons)) v.touchStart()}
-  touchMoved() { for (const v of Object.values(this.buttons)) v.touchMoved()}
-  touchEnded() { for (const v of Object.values(this.buttons)) v.touchEnded()}
+  touchStarted() { for (const v of Object.values(this.buttons)) v.touchStarted() }
+  touchMoved() { for (const v of Object.values(this.buttons)) v.touchMoved() }
+  touchEnded() { 
+    for (const v of Object.values(this.buttons)) v.touchEnded()
+    return this.mouseClicked();
+  }
 
   // Draw
   draw_background() {
@@ -51,16 +55,5 @@ class Screen {
     //  this.background.width,
     //  this.background.height
     //);
-  }
-
-  // Update
-  update_animation(list, duration = 1) {
-    //for (const k of Object.keys(list)) {
-    //  if (list[k].animation < duration) {
-    //    list[k].animation += deltaTime / 1000 * .001;
-    //    if (list[k].animation > duration)
-    //      list[k].animation = duration;
-    //  }
-    //};
   }
 }

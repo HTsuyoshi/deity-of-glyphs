@@ -1,3 +1,5 @@
+//TODO: Fix when current selected alphabet isnt unlocked in the achievements
+
 class TeamEditor extends Screen {
   constructor() {
     super();
@@ -9,7 +11,7 @@ class TeamEditor extends Screen {
 
   setup_ui() {
     // Current team carrousel
-    this.team_carrousel = new Carrousel(
+    this.team_carrousel = new ViewCarrousel(
       createVector(0, 0),
       team,
       CHARACTER_SIZE * 10
@@ -18,22 +20,22 @@ class TeamEditor extends Screen {
     // Select new character carrousel
     this.carrousel_height = height * .25;
 
-    this.vowel_carrousel = new Carrousel(
+    this.vowel_carrousel = new EditorCarrousel(
       createVector(0, 0),
       VOWELS,
       CHARACTER_SIZE * 3
     );
-    this.consonant_carrousel = new Carrousel(
+    this.consonant_carrousel = new EditorCarrousel(
       createVector(0, 0),
       CONSONANTS,
       CHARACTER_SIZE * 3
     );
-    this.special_carrousel = new Carrousel(
+    this.special_carrousel = new EditorCarrousel(
       createVector(0, 0),
       SPECIALS,
       CHARACTER_SIZE * 3
     );
-    this.number_carrousel = new Carrousel(
+    this.number_carrousel = new EditorCarrousel(
       createVector(0, 0),
       NUMBERS,
       CHARACTER_SIZE * 3
@@ -43,29 +45,29 @@ class TeamEditor extends Screen {
       vowel: this.vowel_carrousel,
     };
 
-    if (ACHIEVEMENTS_STATUS[0][0]) this.available_carrousel['consonant'] = this.consonant_carrousel;
-    if (ACHIEVEMENTS_STATUS[0][1]) this.available_carrousel['special'] = this.special_carrousel;
-    if (ACHIEVEMENTS_STATUS[0][2]) this.available_carrousel['number'] = this.number_carrousel;
+    if (ACHIEVEMENTS_STATUS[1][0]) this.available_carrousel['consonant'] = this.consonant_carrousel;
+    if (ACHIEVEMENTS_STATUS[1][1]) this.available_carrousel['number'] = this.number_carrousel;
+    if (ACHIEVEMENTS_STATUS[1][2]) this.available_carrousel['special'] = this.special_carrousel;
 
     this.current_carrousel = this.vowel_carrousel;
 
     // Buttons top
     this.return = new TextButton(
       '<',
-      createVector(0, 0),
-      createVector(SQUARE_BUTTON, SQUARE_BUTTON),
+      { x: 0, y: 0 },
+      { x: SQUARE_BUTTON, y: SQUARE_BUTTON },
       true
     )
     this.traits = new ImageButton(
-      this.images['traits'].img, // TODO: Find team icon
-      createVector(0, 0),
-      createVector(SQUARE_BUTTON, SQUARE_BUTTON),
+      this.images['traits'].img,
+      { x: 0, y: 0 },
+      { x: SQUARE_BUTTON, y: SQUARE_BUTTON },
       true
     )
     this.info = new TextButton(
       '?',
-      createVector(0, 0),
-      createVector(SQUARE_BUTTON, SQUARE_BUTTON),
+      { x: 0, y: 0 },
+      { x: SQUARE_BUTTON, y: SQUARE_BUTTON },
       true
     )
 
@@ -86,22 +88,31 @@ class TeamEditor extends Screen {
 
     // Buttons Bottom
     this.bottom_height = this.carrousel_height * 1.6;
-    this.choose = new TextButton(
-      'Choose',
-      createVector(0, 0),
-      createVector(150, 75)
-    )
-    this.ready = new TextButton(
-      'Ready',
-      createVector(0, 0),
-      createVector(150, 75)
-    )
+    if (MOBILE) {
+      this.ready = new TextButton(
+        'Ready',
+        { x: 0, y: 0 },
+        { x: 300, y: 75 },
+      )
+    } else {
+      this.choose = new TextButton(
+        'Choose',
+        { x: 0, y: 0 },
+        { x: 150, y: 75 },
+      )
+      this.ready = new TextButton(
+        'Ready',
+        { x: 0, y: 0 },
+        { x: 150, y: 75 },
+      )
+    }
+
 
     this.buttons = [];
     this.buttons.push(this.return);
     this.buttons.push(this.traits);
     this.buttons.push(this.info);
-    this.buttons.push(this.choose);
+    if (!MOBILE) this.buttons.push(this.choose);
     this.buttons.push(this.ready);
     this.buttons.push(this.next_carrousel);
     this.buttons.push(this.previous_carrousel);
@@ -126,6 +137,7 @@ class TeamEditor extends Screen {
     if (this.info.hover()) return STATE_TEAM_EDITOR_INFO;
     if (this.ready.hover()) return STATE_BATTLE;
 
+    if (!MOBILE)
     if (this.choose.hover()) {
       const char = new Char(PLAYER_TEAM, this.current_carrousel.current_char());
       team[round(this.team_carrousel.index)] = char;
@@ -147,19 +159,29 @@ class TeamEditor extends Screen {
     }
   }
 
-  touchStart() {
-    this.team_carrousel.touchStart();
-    this.current_carrousel.touchStart();
-  }
-
-  touchEnded() {
-    this.team_carrousel.touchEnded();
-    this.current_carrousel.touchEnded();
+  touchStarted() {
+    super.touchStarted();
+    this.team_carrousel.touchStarted();
+    this.current_carrousel.touchStarted();
   }
 
   touchMoved() {
+    super.touchMoved();
     this.team_carrousel.touchMoved();
     this.current_carrousel.touchMoved();
+  }
+
+  touchEnded() {
+    // TODO: If you drop the character in a button, it shouldnt click the button
+    this.team_carrousel.touchEnded();
+    if (this.current_carrousel.touchEnded()) {
+      if (this.team_carrousel.hover()) {
+        const char = new Char(PLAYER_TEAM, this.current_carrousel.current_char());
+        team[round(this.team_carrousel.index)] = char;
+      }
+      return;
+    }
+    return super.touchEnded();
   }
   
   resize () { 
@@ -182,8 +204,12 @@ class TeamEditor extends Screen {
 
     // Buttons Bottom
     this.bottom_height = this.carrousel_height * 1.6;
-    this.choose.resize( -100, this.bottom_height);
-    this.ready.resize(100, this.bottom_height);
+    if (MOBILE) {
+      this.ready.resize(0, this.bottom_height);
+    } else {
+      this.choose.resize( -100, this.bottom_height);
+      this.ready.resize(100, this.bottom_height);
+    }
   }
 
   // Draw
@@ -197,8 +223,6 @@ class TeamEditor extends Screen {
 
     translate(0, 0, -5);
     stroke(MAIN_COLOR_SHADOW);
-    console.log(textSize());
-    console.log(textWidth('consonant'));
     rect(
       - (textWidth('consonant') / 2) - 20 + SHADOW_GAP,
       this.mid_height - 25 + SHADOW_GAP,

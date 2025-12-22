@@ -4,7 +4,8 @@ class Entity extends Solid {
     this.attributes = {
       team: -1,
       trait: '',
-      style: 0,
+      style: STYLE_NORMAL,
+      //style: STYLE_UPPERCASE,
       weapon: ATTACK_SEMI_AUTO,
       current_ammo: 1,
       ammo: 1,
@@ -27,19 +28,20 @@ class Entity extends Solid {
       particle_animation: .05,
       ghost_animation: 0.05,
     };
+    this.ghost = [];
+    this.block = false;
     this.restore();
   }
 
   // p5js
   mouseClicked() {
-    //if (!this.hover()) return false;
+    //if (!this.hover()) return;
     //this.attributes.pos.x = MOUSE_X;
     //this.attributes.pos.y = MOUSE_Y;
-    //return true;
+    //return;
   }
 
   update() {
-    if (this.layer_img === null) this.freeze();
     this.update_animations();
 
     // Character is moving
@@ -53,12 +55,7 @@ class Entity extends Solid {
   }
 
   draw() {
-    //this.draw_char();
-    image(
-      this.layer_img,
-      this.attributes.pos.x - (this.layer_img.width * .5),
-      this.attributes.pos.y - (this.layer_img.height * .5),
-    );
+    this.draw_char();
     if (this.current_animation.show_bar >= this.animation.show_bar) return;
     const alpha = lerp(255, 0, (this.current_animation.show_bar / this.animation.show_bar));
     this.draw_health_bar(alpha);
@@ -90,6 +87,16 @@ class Entity extends Solid {
       case STYLE_UPPERCASE:
         char = char.toUpperCase();
         break;
+      case STYLE_UNDERLINE:
+        if (!this.block) break;
+        noStroke();
+        rect(
+          this.attributes.pos.x - (CHARACTER_SIZE * .40),
+          this.attributes.pos.y + (CHARACTER_SIZE * .5) + (CHARACTER_SIZE * .1),
+          CHARACTER_SIZE * .7,
+          CHARACTER_SIZE * .1
+        );
+        break;
     }
     SECOND_COLOR.setAlpha(255)
     text(
@@ -105,10 +112,10 @@ class Entity extends Solid {
     noStroke();
     fill(color(255, 0, 0, alpha));
     rect(
-      this.attributes.pos.x - (CHARACTER_SIZE/2),
-      this.attributes.pos.y - ((CHARACTER_SIZE/2) + (CHARACTER_SIZE/5)),
+      this.attributes.pos.x - (CHARACTER_SIZE * .5),
+      this.attributes.pos.y - ((CHARACTER_SIZE * .5) + (CHARACTER_SIZE * .2)),
       CHARACTER_SIZE * (this.attributes.current_health/(this.all_max_health)),
-      CHARACTER_SIZE/10
+      CHARACTER_SIZE * .1
     );
 
     // DEBUG: Show character health
@@ -151,7 +158,6 @@ class Entity extends Solid {
           this.attributes.pos
         )
       )
-    // TODO: Change normalize to heading
 
     let bullet;
     switch (this.attributes.weapon) {
@@ -176,16 +182,15 @@ class Entity extends Solid {
           this.all_ammo
         );
         break;
-      case ATTACK_GUIDED:
+      case ATTACK_SNIPER:
         vel = vel
-          .rotate(random(-QUARTER_PI, QUARTER_PI))
           .mult(this.all_damage);
-        bullet = new GuidedBullet(
+        bullet = new Bullet(
           this.attributes.team,
-          this.all_damage,
+          this.all_damage * this.all_ammo,
           vel,
           createVector(this.attributes.pos.x, this.attributes.pos.y),
-          this.all_ammo
+          target
         );
         break;
       default:
@@ -214,15 +219,27 @@ class Entity extends Solid {
     let i = entities.indexOf(this);
     if (i > -1) entities.splice(i, 1);
     this.death_animation();
+    game.sounds['death'].play();
   }
 
   damage(quantity) {
+    if (this.block) {
+      this.block = false;
+      //game.sounds['hit_block'].play();
+      return;
+    }
+    game.sounds['hit'].play();
     this.current_animation.show_bar = 0;
     this.attributes.current_health = max(this.attributes.current_health - quantity, 0);
     if (this.attributes.current_health <= 0) this.death();
   }
 
-  next_action() { return random([ACTION_WALK, ACTION_ATTACK]); }
+  next_action() {
+    const action = random([ACTION_WALK, ACTION_ATTACK]);
+    if (action === ACTION_WALK && this.attributes.style === STYLE_ITALIC)
+      game.sounds['dash'].play();
+    return action;
+  }
 
   next_target() {
     let target = null;
@@ -241,6 +258,7 @@ class Entity extends Solid {
 
   restore() {
     this.ghost = [];
+    if (this.attributes.style === STYLE_UNDERLINE) this.block = true;
 
     const fire_rate = [
       -1,
@@ -271,26 +289,12 @@ class Entity extends Solid {
   }
 
   hover() {
-    if (MOUSE_X > (this.attributes.pos.x - (40 / 2)) &&
-        MOUSE_X < (this.attributes.pos.x + (40 / 2)) &&
-        MOUSE_Y > (this.attributes.pos.y - (40 / 2)) &&
-        MOUSE_Y < (this.attributes.pos.y + (40 / 2)))
+    if (MOUSE_X > (this.attributes.pos.x - (CHARACTER_SIZE * .5)) &&
+        MOUSE_X < (this.attributes.pos.x + (CHARACTER_SIZE * .5)) &&
+        MOUSE_Y > (this.attributes.pos.y - (CHARACTER_SIZE * .5)) &&
+        MOUSE_Y < (this.attributes.pos.y + (CHARACTER_SIZE * .5)))
       return true;
     return false;
-  }
-
-  freeze() {
-    this.layer.begin();
-    clear();
-    const old_x = this.attributes.pos.x,
-      old_y = this.attributes.pos.y;
-    this.attributes.pos.x = 0;
-    this.attributes.pos.y = 0;
-    this.draw_char();
-    this.attributes.pos.x = old_x;
-    this.attributes.pos.y = old_y;
-    this.layer.end();
-    this.layer_img = this.layer.get();
   }
 
   // Getters and Setters
@@ -306,7 +310,7 @@ class Entity extends Solid {
 
   get all_max_health() {
     if (this.attributes.style === STYLE_UPPERCASE)
-      return (this.attributes.max_health + this.attributes.upgrades.max_health) * 1.5;
+      return (this.attributes.max_health + this.attributes.upgrades.max_health) * 2.0;
     return this.attributes.max_health + this.attributes.upgrades.max_health;
   }
 }

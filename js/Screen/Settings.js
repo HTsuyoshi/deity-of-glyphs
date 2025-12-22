@@ -7,8 +7,9 @@ class Settings extends Screen {
   setup_ui() {
     this.volume = new Slider(
       'Volume',
-      createVector(0, 0),
-      BUTTON_WIDTH
+      { x: 0, y: 0},
+      BUTTON_WIDTH,
+      VOLUME
     );
 
     this.sliders = [];
@@ -16,14 +17,14 @@ class Settings extends Screen {
 
     this.change_color = new TextButton(
       'Game color',
-      createVector(0, 0),
-      createVector(BUTTON_WIDTH, BUTTON_HEIGHT)
+      { x: 0, y: 0},
+      { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
     )
 
     this.return = new TextButton(
       '<',
-      createVector(0, 0),
-      createVector(SQUARE_BUTTON, SQUARE_BUTTON),
+      { x: 0, y: 0},
+      { x: SQUARE_BUTTON, y: SQUARE_BUTTON },
       true
     )
 
@@ -41,8 +42,19 @@ class Settings extends Screen {
   }
 
   mouseClicked() {
-    if (this.sliders[0].hover()) this.sliders[0].mouseClicked();
-    if (this.change_color.hover()) setup_colors(true);
+    if (this.sliders[0].hover()) {
+      this.sliders[0].mouseClicked();
+      VOLUME = this.sliders[0].value;
+      game.set_volumes();
+      game.sounds['dash'].play();
+    }
+
+    if (this.change_color.hover()) {
+      setup_colors(true);
+      stroke(SECOND_COLOR);
+      fill(SECOND_COLOR);
+      this.setup();
+    }
     if (this.return.hover()) return STATE_MENU;
   }
 

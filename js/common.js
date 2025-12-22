@@ -24,7 +24,7 @@ const STATE_MENU = 0,
       ATTACK_KAMIKAZE = 4,
       ATTACK_LASER = 5,
       ATTACK_EXPLOSIONS = 6,
-      ATTACK_GUIDED = 7,
+      ATTACK_SNIPER = 7,
       WEAPON_NAME = [
         'melee',
         'auto',
@@ -33,7 +33,7 @@ const STATE_MENU = 0,
         'suicide',
         'laser',
         'explosions',
-        'guided',
+        'sniper',
       ],
       GHOST_LENGTH = 5,
       LASER_DURATION = 3.0
@@ -41,18 +41,19 @@ const STATE_MENU = 0,
       STYLE_BOLD = 1,
       STYLE_ITALIC = 2,
       STYLE_UPPERCASE = 3,
+      STYLE_UNDERLINE = 4,
       STYLE_NAME = [
         'normal',
         'bold',
         'italic',
         'uppercase',
+        'underline',
       ],
       ENEMY_TEAM = 'ENEMY',
       PLAYER_TEAM = 'PLAYER',
       SHADOW_GAP = 4,
       STROKE_WEIGHT = 4,
       GAME_TITLE = 'Letter Wars',
-      //BRAILLE = ['⠁', '⠂', '⠃', '⠄', '⠅', '⠆', '⠇', '⠈', '⠉', '⠊', '⠋', '⠌', '⠍', '⠎', '⠏', '⠐', '⠑', '⠒', '⠓', '⠔', '⠕', '⠖', '⠗', '⠘', '⠙', '⠚', '⠛', '⠜', '⠝', '⠞', '⠟', '⠠', '⠡', '⠢', '⠣', '⠤', '⠥', '⠦', '⠧', '⠨', '⠩', '⠪', '⠫', '⠬', '⠭', '⠮', '⠯', '⠰', '⠱', '⠲', '⠳', '⠴', '⠵', '⠶', '⠷', '⠸', '⠹', '⠺', '⠻', '⠼', '⠽', '⠾', '⠿', '⡀', '⡁', '⡂', '⡃', '⡄', '⡅', '⡆', '⡇', '⡈', '⡉', '⡊', '⡋', '⡌', '⡍', '⡎', '⡏', '⡐', '⡑', '⡒', '⡓', '⡔', '⡕', '⡖', '⡗', '⡘', '⡙', '⡚', '⡛', '⡜', '⡝', '⡞', '⡟', '⡠', '⡡', '⡢', '⡣', '⡤', '⡥', '⡦', '⡧', '⡨', '⡩', '⡪', '⡫', '⡬', '⡭', '⡮', '⡯', '⡰', '⡱', '⡲', '⡳', '⡴', '⡵', '⡶', '⡷', '⡸', '⡹', '⡺', '⡻', '⡼', '⡽', '⡾', '⡿', '⢀', '⢁', '⢂', '⢃', '⢄', '⢅', '⢆', '⢇', '⢈', '⢉', '⢊', '⢋', '⢌', '⢍', '⢎', '⢏', '⢐', '⢑', '⢒', '⢓', '⢔', '⢕', '⢖', '⢗', '⢘', '⢙', '⢚', '⢛', '⢜', '⢝', '⢞', '⢟', '⢠', '⢡', '⢢', '⢣', '⢤', '⢥', '⢦', '⢧', '⢨', '⢩', '⢪', '⢫', '⢬', '⢭', '⢮', '⢯', '⢰', '⢱', '⢲', '⢳', '⢴', '⢵', '⢶', '⢷', '⢸', '⢹', '⢺', '⢻', '⢼', '⢽', '⢾', '⢿', '⣀', '⣁', '⣂', '⣃', '⣄', '⣅', '⣆', '⣇', '⣈', '⣉', '⣊', '⣋', '⣌', '⣍', '⣎', '⣏', '⣐', '⣑', '⣒', '⣓', '⣔', '⣕', '⣖', '⣗', '⣘', '⣙', '⣚', '⣛', '⣜', '⣝', '⣞', '⣟', '⣠', '⣡', '⣢', '⣣', '⣤', '⣥', '⣦', '⣧', '⣨', '⣩', '⣪', '⣫', '⣬', '⣭', '⣮', '⣯', '⣰', '⣱', '⣲', '⣳', '⣴', '⣵', '⣶', '⣷', '⣸', '⣹', '⣺', '⣻', '⣼', '⣽', '⣾', '⣿'],
       NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
       VOWELS = ['a', 'e', 'i', 'o', 'u'],
       CONSONANTS = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'],
@@ -63,28 +64,31 @@ let entities = [],
   bullets = [],
   particles = [],
   team = [],
+  team_battlefield = [],
   enemy_team = [],
   upgrades = [];
 
 // Settings
 let IMAGES = {},
   CURRENT_COLORS = 0,
+  VOLUME = 0.5,
   WAVE_QUANTITY = 5,
   AVAILABLE_CHARACTERS,
   TEAM_SIZE,
   ENEMY_TEAM_SIZE,
   AVAILABLE_UPGRADES,
   ACHIEVEMENTS_STATUS = [
-    [true, true, true, true],
-    [false, false, false, false],
-    [false, false, false, false],
+    [true, true, true, true], // Team size
+    [true, true, true, false], // Alphabets
+    //[true, true, true, true], // Styles
+    //[true, true, true, true], // Weapons
     [false, false, false, false],
     [false, false, false, false],
   ],
   ACHIEVEMENTS_UNLOCKED = [
+    //[true, true, true, true],
     [true, true, true, true],
-    [false, false, false, false],
-    [false, false, false, false],
+    [true, true, true, false],
     [false, false, false, false],
     [false, false, false, false],
   ];
@@ -93,18 +97,19 @@ setup_values();
 // Setup
 function setup_values() {
   AVAILABLE_CHARACTERS = [...VOWELS];
-  TEAM_SIZE = 3;
+  TEAM_SIZE = 4;
   ENEMY_TEAM_SIZE = 3;
   AVAILABLE_UPGRADES = [
-    //{ buffs: { ammo: UPGRADE_AMMO } },
-    //{ buffs: { damage: UPGRADE_DAMAGE } },
-    //{ buffs: { max_health: UPGRADE_HEALTH } },
-    //{ buffs: { damage: UPGRADE_DAMAGE * .5,
-    //  max_health: UPGRADE_HEALTH * .5 } },
+    { buffs: { ammo: UPGRADE_AMMO } },
+    { buffs: { damage: UPGRADE_DAMAGE } },
+    { buffs: { max_health: UPGRADE_HEALTH } },
+    { buffs: { damage: UPGRADE_DAMAGE * .5,
+      max_health: UPGRADE_HEALTH * .5 } },
     { weapon: ATTACK_SEMI_AUTO },
     { style: STYLE_BOLD },
     { style: STYLE_ITALIC },
     { style: STYLE_UPPERCASE },
+    { style: STYLE_UNDERLINE },
   ];
 }
 
@@ -125,6 +130,12 @@ function get_buff(trait) {
     special:  { ammo: UPGRADE_AMMO, }
   };
   return buffs[trait];
+}
+
+function get_team_word() {
+  return team
+    .map(c => c.char)
+    .join('');
 }
 
 // Auxiliar functions
@@ -151,7 +162,7 @@ function setup_achievements() {
   }
   if (team.length > TEAM_SIZE) {
     while (team.length > TEAM_SIZE) {
-      team.splice(0, 1);
+      team.splice(team.length - 1, 1);
     }
   } else {
     while (team.length < TEAM_SIZE) {
@@ -162,6 +173,10 @@ function setup_achievements() {
 
 function change_achievement(i, j, activate) {
   if (i === 0) {
+    if (activate) TEAM_SIZE++;
+    else TEAM_SIZE--;
+  }
+  if (i === 1) {
     let characters = [];
     if (j === 0) characters = CONSONANTS;
     if (j === 1) characters = NUMBERS;
@@ -177,12 +192,15 @@ function change_achievement(i, j, activate) {
     }
     return;
   }
-  if (i === 1) {
-    if (activate) TEAM_SIZE++;
-    else TEAM_SIZE--;
-  }
   if (i === 2) {
-    const new_weapon = [ATTACK_GUIDED, ATTACK_KAMIKAZE, ATTACK_LASER, ATTACK_EXPLOSIONS];
+    const new_style = [STYLE_ITALIC, STYLE_BOLD, STYLE_UPPERCASE, STYLE_UNDERLINE];
+    if (activate) AVAILABLE_UPGRADES.push({ style: new_style[j] });
+    else AVAILABLE_UPGRADES = AVAILABLE_UPGRADES
+      .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify({ style: new_style }));
+    return;
+  }
+  if (i === 3) {
+    const new_weapon = [ATTACK_SNIPER, ATTACK_KAMIKAZE, ATTACK_EXPLOSIONS, ATTACK_LASER];;
     if (activate) AVAILABLE_UPGRADES.push({ weapon: new_weapon[j] });
     else AVAILABLE_UPGRADES = AVAILABLE_UPGRADES
       .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify({ weapon: new_weapon }));

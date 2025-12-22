@@ -17,6 +17,8 @@ class Laser extends SolidBullet {
 
     this.target = extend_target(this.attributes.pos, target.attributes.pos, width + height);
     this.laser_pos = extend_target(this.attributes.pos, this.target, 20 + this.base_width);
+
+    this.play_audio = true;
   }
 
   // p5js
@@ -38,6 +40,10 @@ class Laser extends SolidBullet {
       this.laser_width_2 = this.laser_width_1 + (random(.2,.5) * this.base_width);
       return;
     } else if (this.current_duration < (LASER_DURATION - .5)) {
+      if (this.play_audio) {
+        game.sounds['laser'].play();
+        this.play_audio = false;
+      }
       this.laser_width = this.base_width * (LASER_DURATION - .5);
       this.laser_width += random(.2,.5) * this.base_width;
       this.laser_width_1 = this.laser_width + (random(.2,.5) * this.base_width);

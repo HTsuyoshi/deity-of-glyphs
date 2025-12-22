@@ -42,23 +42,32 @@ class DeathParticle extends Particle {
     }
     this.pos.add(this.vel);
     this.alpha -= 5;
-    this.animation -= (deltaTime / 1000/1000);
+    this.animation -= (deltaTime / 1000);
   }
 
   draw_particle() {
     push();
     noStroke();
-    // TODO: Refactor this code
     if (this.animation < 0) {
       this.animation = 0.2;
       this.turn = !this.turn;
     }
     fill(255, this.alpha);
-    rect(
-      this.pos.x - (this.turn ? 0 : CHARACTER_SIZE/8),
-      this.pos.y - (this.turn ? CHARACTER_SIZE/8 : 0),
-      CHARACTER_SIZE/8 * (this.turn ? 1 : 2),
-      CHARACTER_SIZE/8 * (this.turn ? 2 : 1));
+    if (this.turn) {
+      rect(
+        this.pos.x - 0,
+        this.pos.y - CHARACTER_SIZE/8,
+        CHARACTER_SIZE/8 * 1,
+        CHARACTER_SIZE/8 * 2
+      );
+    } else {
+      rect(
+        this.pos.x - CHARACTER_SIZE/8,
+        this.pos.y - 0,
+        CHARACTER_SIZE/8 * 2,
+        CHARACTER_SIZE/8 * 1
+      );
+    }
     pop();
   }
 }
@@ -94,7 +103,7 @@ class TrailParticle extends Particle {
 class StarParticle extends Particle {
   constructor(pos, vel) {
     super();
-    this.img = game.images['star_2'];
+    this.img = game.images['star'];
   }
 
   setup() {

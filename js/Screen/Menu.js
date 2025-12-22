@@ -11,8 +11,7 @@ class Menu extends Screen {
   }
 
   setup() {
-    this.background = random([BACKGROUND_MATRIX]);//, BACKGROUND_ALIVE]);
-    //this.background = random([BACKGROUND_MATRIX, BACKGROUND_ALIVE]);
+    this.background = random([BACKGROUND_MATRIX, BACKGROUND_ALIVE]);
     this.off_y = height / 6;
     super.setup();
     switch (this.background) {
@@ -20,37 +19,13 @@ class Menu extends Screen {
         this.matrix = [];
 
         let alphabet = [...AVAILABLE_CHARACTERS];
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        alphabet.concat(AVAILABLE_CHARACTERS);
-        //if (alphabet.length > 20) {
-        //  shuffle(alphabet, true);
-        //  alphabet = alphabet.slice(0, 20);
-        //}
+        const qty = isMobile() ? 10 : 20;
+        if (alphabet.length > qty) {
+          shuffle(alphabet, true);
+          alphabet = alphabet.slice(0, qty);
+        }
 
-        for (const c of alphabet) {
-          //const layer = createFramebuffer();
-          //layer.resize(ceil(CHARACTER_SIZE), ceil(CHARACTER_SIZE));
-          //clear();
-          //layer.begin();
-          //background(MAIN_COLOR);
-          //text(c, 0, 0);
-          //layer.end();
-          
-          //this.matrix.push({
-          //  img: layer.get(),
-          //  alpha: 255,
-          //  delay: random(0, 4),
-          //  pos: createVector(random(WINDOW_LEFT, WINDOW_RIGHT), WINDOW_TOP - CHARACTER_SIZE),
-          //  vel: createVector(0, 0),
-          //  rot: 0,
-          //  rot_vel: random(-QUARTER_PI/4, QUARTER_PI/4),
-          //});
+        for (const c of alphabet)
           this.matrix.push({
             char: c,
             alpha: 255,
@@ -60,8 +35,6 @@ class Menu extends Screen {
             rot: 0,
             rot_vel: random(-QUARTER_PI/4, QUARTER_PI/4),
           });
-
-        }
         break;
 
       case BACKGROUND_ALIVE:
@@ -85,31 +58,31 @@ class Menu extends Screen {
   setup_ui() {
     this.achievement = new ImageButton(
       this.images['achievement'].img,
-      createVector(0, 0),
-      createVector(SQUARE_BUTTON, SQUARE_BUTTON),
+      { x: 0, y: 0 },
+      { x: SQUARE_BUTTON, y: SQUARE_BUTTON },
       true
     );
     this.social = new ImageButton(
       this.images['social'].img,
-      createVector(0, 0),
-      createVector(SQUARE_BUTTON, SQUARE_BUTTON),
+      { x: 0, y: 0 },
+      { x: SQUARE_BUTTON, y: SQUARE_BUTTON },
       true
     );
 
     this.new_game = new TextButton(
       'Start',
-      createVector(0, 0),
-      createVector(BUTTON_WIDTH, BUTTON_HEIGHT)
+      { x: 0, y: 0},
+      { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
     );
     this.sandbox = new TextButton(
       'Sandbox',
-      createVector(0, 0),
-      createVector(BUTTON_WIDTH, BUTTON_HEIGHT),
+      { x: 0, y: 0},
+      { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
     );
     this.settings = new TextButton(
       'Settings',
-      createVector(0, 0),
-      createVector(BUTTON_WIDTH, BUTTON_HEIGHT),
+      { x: 0, y: 0},
+      { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
     );
 
     this.buttons = [];
@@ -142,9 +115,9 @@ class Menu extends Screen {
     if (this.settings.hover()) return STATE_SETTINGS;
   }
 
-  resize () { 
+  resize() { 
     this.achievement.resize(
-      WINDOW_LEFT + (SQUARE_BUTTON * .5) + 20,WINDOW_BOTTOM - 25 - 20,
+      WINDOW_LEFT + (SQUARE_BUTTON * .5) + 20, WINDOW_BOTTOM - 25 - 20,
     );
     this.social.resize(
       WINDOW_RIGHT - (SQUARE_BUTTON * .5) - 20, WINDOW_BOTTOM - 25 - 20,
@@ -187,16 +160,7 @@ class Menu extends Screen {
   }
 
   draw_matrix() {
-    // This shit is using all CPU
     push();
-    //for (const c of this.matrix) {
-    //  push();
-    //  translate(c.pos.x, c.pos.y);
-    //  rotate(c.rot);
-    //  //tint(255, c.alpha)
-    //  image(c.img, 0, 0);
-    //  pop();
-    //}
     for (const c of this.matrix) {
       SECOND_COLOR.setAlpha(c.alpha);
       push();
@@ -217,18 +181,19 @@ class Menu extends Screen {
         continue;
       }
 
-      c.pos.add(c.vel);
-      c.vel.add(createVector(0, 0.1));
+      c.pos.add(c.vel.copy().mult(deltaTime / 10));
+      c.vel.y += 0.1;
       c.rot += c.rot_vel;
-      //c.alpha = lerp(255, 0, (((height * .5) - c.pos.y) / height));
       c.alpha = 255 * (((height * .5) - c.pos.y) / height);
 
       if (c.pos.x < WINDOW_LEFT || c.pos.x > WINDOW_RIGHT)
         c.vel.x = -c.vel.x;
 
       if (c.pos.y > WINDOW_BOTTOM) {
-        c.pos = createVector(random(WINDOW_LEFT, WINDOW_RIGHT), WINDOW_TOP - CHARACTER_SIZE);
-        c.vel = createVector(0, 0);
+        c.pos.x = random(WINDOW_LEFT, WINDOW_RIGHT);
+        c.pos.y = WINDOW_TOP - CHARACTER_SIZE;
+        c.vel.x = 0;
+        c.vel.y = 0;
         c.rot = 0;
         c.alpha = 255;
       }
@@ -257,7 +222,7 @@ class Menu extends Screen {
         v.attributes.vel.add(
           mouse.copy().sub(pos)
             .normalize()
-            .mult(-5)
+            .mult(-10)
         );
     }
   }

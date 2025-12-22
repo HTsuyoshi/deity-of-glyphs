@@ -27,7 +27,6 @@ class SandBox extends Battle {
     }
 
     if (this.finish && (this.winner == ENEMY_TEAM)) {
-      // TODO: Statistics
       return STATE_TEAM_EDITOR;
     }
 

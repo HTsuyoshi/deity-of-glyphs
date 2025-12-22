@@ -15,6 +15,8 @@ class UpgradeCard extends Prop {
     this.upgrade = upgrade;
     this.name = upgrade.trait;
     this.img = this.get_image(images);
+
+    this.play_audio = true;
   }
 
   // p5js
@@ -100,43 +102,63 @@ class UpgradeCard extends Prop {
 
   draw_weapon_description() {
     let t1 = 'Equip ',
-      t2 = `${this.upgrade.trait}`;
+      t2 = `${this.upgrade.trait}`,
+      h = - 20;
     fill(SECOND_COLOR)
-    text(t1, -(textWidth(t2) * .5), 20);
+    text(t1, -(textWidth(t2) * .5), - h);
     fill(TEAM_COLOR)
-    text(t2, textWidth(t1) * .5, 20);
+    text(t2, textWidth(t1) * .5, - h);
     t1 = 'with ';
     t2 = `${WEAPON_NAME[this.upgrade.weapon]}`;
     fill(SECOND_COLOR)
-    text(t1, -textWidth(t2) * .5, (CHARACTER_SIZE * .7) + 20);
+    text(t1, -textWidth(t2) * .5, (CHARACTER_SIZE * .7) - h);
     fill(UPGRADE_COLOR)
-    text(t2, textWidth(t1) * .5, (CHARACTER_SIZE * .7) + 20);
+    text(t2, textWidth(t1) * .5, (CHARACTER_SIZE * .7) - h);
   }
 
   draw_style_description() {
     let t1 = 'Transform ',
       t2 = `${this.upgrade.trait}`;
+    const h = - (CHARACTER_SIZE * .7);
+
     fill(SECOND_COLOR)
-    text(t1, -(textWidth(t2) * .5), 20);
+    text(t1, -(textWidth(t2) * .5), h);
     fill(TEAM_COLOR)
-    text(t2, textWidth(t1) * .5, 20);
+    text(t2, textWidth(t1) * .5, h);
     t1 = 'into ';
     t2 = `${STYLE_NAME[this.upgrade.style]}`;
     fill(SECOND_COLOR)
-    text(t1, -textWidth(t2) * .5, (CHARACTER_SIZE * .7) + 20);
+    text(t1, -textWidth(t2) * .5, (CHARACTER_SIZE * .7) + h);
     fill(UPGRADE_COLOR)
-    text(t2, textWidth(t1) * .5, (CHARACTER_SIZE * .7) + 20);
+    text(t2, textWidth(t1) * .5, (CHARACTER_SIZE * .7) + h);
+    switch(this.upgrade.style) {
+      case STYLE_ITALIC:
+        t1 = '(Walk longer)';
+        break;
+      case STYLE_BOLD:
+        t1 = '(1.5x Damage)';
+        break;
+      case STYLE_UPPERCASE:
+        t1 = '(2.0x Health)';
+        break;
+      case STYLE_UNDERLINE:
+        t1 = '(Block first attack)';
+        break;
+    }
+    fill(DEAD_COLOR)
+    text(t1, 0, (CHARACTER_SIZE * 1.4) + h);
   }
 
   draw_buff_description() {
-    let off_y = 0;
+    let off_y = 0,
+      h = - 20;
     for (const k in this.upgrade.buffs) {
       let t1 = `${k}: `,
         t2 = `${this.upgrade.buffs[k]}`;
       fill(SECOND_COLOR);
-      text(t1, -(textWidth(t2) * .5), 20 + (CHARACTER_SIZE * off_y * .6));
+      text(t1, -(textWidth(t2) * .5), h + (CHARACTER_SIZE * off_y * .6));
       fill(UPGRADE_COLOR);
-      text(t2, (textWidth(t1) * .5), 20 + (CHARACTER_SIZE * off_y * .6) );
+      text(t2, (textWidth(t1) * .5), h + (CHARACTER_SIZE * off_y * .6) );
       off_y++;
     }
   }
@@ -149,6 +171,11 @@ class UpgradeCard extends Prop {
       this.delay -= delta;
       return;
     }
+
+    if (this.play_audio) {
+      game.sounds['upgrade'].play();
+      this.play_audio = false;
+    }
     if (this.current_animation < this.animation) { 
       this.current_animation += delta;
       this.pos = p5.Vector.lerp(this.start_pos, this.final_pos, easeOutElastic(this.current_animation/this.animation));
@@ -159,7 +186,7 @@ class UpgradeCard extends Prop {
     if ('buffs' in this.upgrade) {
       if ('ammo' in this.upgrade.buffs) return images['ammo_up'].img;
       if ('damage' in this.upgrade.buffs) return images['damage_up'].img;
-      if ('health' in this.upgrade.buffs) return images['health_up'].img;
+      if ('max_health' in this.upgrade.buffs) return images['health_up'].img;
     }
     if ('weapon' in this.upgrade) {
       switch (this.upgrade.weapon) {
@@ -169,10 +196,12 @@ class UpgradeCard extends Prop {
           return images['semi'].img;;
         case ATTACK_AUTO:
           return images['auto'].img;;
+        case ATTACK_LASER:
+          return images['laser'].img;;
         case ATTACK_EXPLOSIONS:
           return images['explosion'].img;;
-        case ATTACK_GUIDED:
-          return images['guided'].img;;
+        case ATTACK_SNIPER:
+          return images['sniper'].img;;
       }
     }
     if ('style' in this.upgrade) {
@@ -183,6 +212,8 @@ class UpgradeCard extends Prop {
           return images['bold'].img;;
         case STYLE_UPPERCASE:
           return images['uppercase'].img;;
+        case STYLE_UNDERLINE:
+          return images['underline'].img;;
       }
     }
     return images['ammo_up'].img;
@@ -200,5 +231,8 @@ class UpgradeCard extends Prop {
 
   mouseClicked() {}
 
-  resize() {}
+  resize(x, y) {
+    this.final_pos.x = x;
+    this.final_pos.y = y;
+  }
 }

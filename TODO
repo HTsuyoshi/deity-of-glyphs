@@ -1,27 +1,23 @@
+# TODO
+
 1.   [ ] - Show buff information in TeamEditorView
 2.   [ ] - Create MELEE
-3.   [X] - How to use italic and bold (textStyle())
-3.1. [X] - Italic upgrade
-3.2. [ ] - Bold upgrade
-4.   [ ] - Upgrade Capital Characters
-5.   [ ] - Mudar a cor do jogo gradualmetne
-9.   [ ] - Create background
-10.  [ ] - Create animation for changing team
-12.  [ ] - Create upgrade sandevistan
-14.  [ ] - Fix bullet velocity
-15.  [ ] - Find a font that supports italic and bold
-19.  [X] - Create Achievement pop up
+3.   [ ] - Mudar a cor do jogo gradualmetne
+4.   [ ] - Create background
+4.1  [ ] - Notebook lines as background
+5.   [ ] - Create upgrade sandevistan
+10.  [ ] - Create animation between Screen change
+[ ] - Sounds
+
+Limiter fps
+Verify why cellphones are capped at 45 frames
+
+# Notes
 
 Fix anti alias
 rect(round(x), round(y), ceil(colWidths[i]), ceil(rowHeights[j])); 
 
-Fundo linhas de caderno
-7 chefes (formulas)
-PI kamehameha
-O pi fica quicando e quando escosta o chefe atira mais como um sinalizador quando o chefe vai atacar
-
-
-Lser
+Laser formula raycasting
 
 ```js
 let player, enemy;

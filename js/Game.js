@@ -21,26 +21,67 @@ class Game {
     this.screen.push(new Achievement());
     this.screen.push(new Traits());
 
+    this.background_color = 1.0;
+
     this.popup = [];
     //this.screen.push(new MockBattle());
 
-    for (let i=0; i<TEAM_SIZE; i++) {
-      team.push(new Char(PLAYER_TEAM, random(VOWELS)));
-    }
-
-    enemy_team.push(new Char(ENEMY_TEAM, random(VOWELS)));
-    enemy_team.push(new Char(ENEMY_TEAM, random(CONSONANTS)));
-    enemy_team.push(new Char(ENEMY_TEAM, random(NUMBERS)));
-    enemy_team.push(new Char(ENEMY_TEAM, random(SPECIALS)));
     setup_achievements();
 
     this.sounds = {};
     this.images = {};
   }
 
-  async setup(audio_folder, image_folder, font_folder) {
+  load(audio_folder, image_folder, font_folder) {
+    this.font = loadFont(`${font_folder}/ark-pixel-10px-monospaced-latin.ttf`);
+
+    this.screen[STATE_MENU].load(image_folder);
+    this.screen[STATE_TEAM_EDITOR].load(image_folder);
+    this.screen[STATE_TEAM_EDITOR_INFO].load(image_folder);
+    this.screen[STATE_BATTLE].load(image_folder);
+    this.screen[STATE_BATTLE_MENU].load(image_folder);
+    this.screen[STATE_TEAM_VIEW].load(image_folder);
+    this.screen[STATE_UPGRADE].load(image_folder);
+    this.screen[STATE_SETTINGS].load(image_folder);
+    this.screen[STATE_SANDBOX].load(image_folder);
+    this.screen[STATE_ACHIEVEMENT].load(image_folder,
+      [
+        this.screen[STATE_UPGRADE].images['italic'].img,
+        this.screen[STATE_UPGRADE].images['bold'].img,
+        this.screen[STATE_UPGRADE].images['uppercase'].img,
+        this.screen[STATE_UPGRADE].images['underline'].img,
+        this.screen[STATE_UPGRADE].images['sniper'].img,
+        this.screen[STATE_UPGRADE].images['sniper'].img,
+        //this.screen[STATE_UPGRADE].images['kamikaze'].img,
+        this.screen[STATE_UPGRADE].images['explosion'].img,
+        this.screen[STATE_UPGRADE].images['laser'].img,
+      ]
+    );
+    this.screen[STATE_TRAITS].load(audio_folder, image_folder);
+
+    const images_load = {
+      star: 'particles/star.png',
+    };
+    for (const k in images_load)
+      this.images[k] = loadImage(`${image_folder}/${images_load[k]}`);
+
+    const sounds_load = {
+      explosion: 'explosion.wav',
+      laser: 'laser.wav',
+      bullet: 'bullet.wav',
+      dash: 'dash.wav',
+      death: 'death.wav',
+      hit: 'hit.wav',
+      upgrade: 'upgrade.wav',
+    };
+    for (const k in sounds_load) {
+      this.sounds[k] = loadSound(`${audio_folder}/${sounds_load[k]}`);
+      this.sounds[k].playMode('sustain');
+    }
+  }
+
+  setup() {
     // UI Settings
-    this.font = await loadFont(`${font_folder}/ark-pixel-10px-monospaced-latin.ttf`);
     textAlign(CENTER, CENTER);
     textFont(this.font);
     textSize(this.font_size);
@@ -51,25 +92,22 @@ class Game {
     stroke(SECOND_COLOR);
     fill(SECOND_COLOR);
 
-    // Old load
-    for (const v of Object.values(this.screen))
-      v.load(audio_folder, image_folder);
-    const images_load = {
-      star_1: 'particles/star_1.png',
-      star_2: 'particles/star_2.png',
-    };
-    for (const k in images_load)
-      this.images[k] = await loadImage(`${image_folder}/${images_load[k]}`);
+    this.screen[this.state].setup();
 
-    for (const v of Object.values(this.screen))
-      v.setup();
     // Restore save
     //if(localStorage.getItem('save')) {
     //  this.restore_save();
     //}
 
     // Setup Achievements
+    this.restore_save();
+    this.set_volumes();
     setup_achievements();
+  }
+
+  set_volumes() {
+    for (const k in this.sounds) 
+      this.sounds[k].setVolume(VOLUME);
   }
 
   draw() {
@@ -127,55 +165,30 @@ class Game {
 
   // p5js
   resize() {
-    for (const v of Object.values(this.screen)) v.resize();
+    this.screen[this.state].resize();
+    //for (const v of Object.values(this.screen)) v.resize();
     if (this.popup.length > 0)
       this.popup[0].resize();
   }
 
   mouseMoved() { this.screen[this.state].mouseMoved(); }
   mouseClicked() {
-      this.popup = this.screen[STATE_ACHIEVEMENT].verify_achievements();
+    userStartAudio();
     let next_state = this.screen[this.state].mouseClicked();
     this.save();
     if (next_state === undefined) return;
-    if (this.state === STATE_ACHIEVEMENT)
-        setup_achievements();
-    if (this.state === STATE_BATTLE &&
-      this.screen[STATE_BATTLE].winner === PLAYER_TEAM &&
-      this.screen[STATE_BATTLE].wave === WAVE_QUANTITY) {
-      this.popup = this.screen[STATE_ACHIEVEMENT].verify_achievements();
-      next_state = STATE_MENU;
-      this.screen[STATE_BATTLE] = new Battle();
-    }
-    if (this.state === STATE_UPGRADE) {
-      this.screen[STATE_BATTLE].setup_entities();
-    }
-    switch(next_state) {
-      case STATE_MENU:
-        this.screen[next_state].setup();
-        break;
-      case STATE_BATTLE:
-        if (this.state === STATE_BATTLE_MENU ||
-          this.state === STATE_TEAM_VIEW) {
-          this.screen[next_state].pause = false;
-          break;
-        }
-        bullets = [];
-        particles = [];
-        this.screen[next_state].setup();
-        this.screen[next_state].reset();
-        break;
-      case STATE_UPGRADE:
-        this.screen[next_state].reset_upgrades();
-        break;
-    }
-    this.screen[next_state].setup_ui();
-    this.state = next_state;
+    this.next_state(next_state);
   }
 
-  touchStart() { this.screen[this.state].touchStart(); }
+  touchStarted() { this.screen[this.state].touchStarted(); }
   touchMoved() { this.screen[this.state].touchMoved(); }
-  touchEnded() { this.screen[this.state].touchEnded(); }
+  touchEnded() {
+    userStartAudio();
+    const next_state = this.screen[this.state].touchEnded();
+    this.save();
+    if (next_state === undefined) return;
+    this.next_state(next_state);
+  }
 
   // Game Logic
   save() {
@@ -183,7 +196,9 @@ class Game {
       {
         'current_colors': CURRENT_COLORS,
         'achievements_status': ACHIEVEMENTS_STATUS,
-        'achievements_unlocked': ACHIEVEMENTS_UNLOCKED
+        'achievements_unlocked': ACHIEVEMENTS_UNLOCKED,
+        'volume': VOLUME,
+        'team': get_team_word(),
       }
     );
     localStorage.setItem('save', save);
@@ -195,7 +210,52 @@ class Game {
     if (!this.has_save()) return;
     const save = JSON.parse(localStorage.getItem('save'));
     CURRENT_COLORS = save.current_colors;
+    setup_colors(false);
     ACHIEVEMENTS_STATUS = save.achievements_status;
     ACHIEVEMENTS_UNLOCKED = save.achievements_unlocked;
+    VOLUME = save.volume;
+    team = [];
+    for (let i=0; i<save.team.length; i++) {
+      team[i] = new Char(PLAYER_TEAM, save.team[i]);
+    }
+  }
+
+  next_state(next_state) {
+    if (this.state === STATE_BATTLE_MENU ||
+      this.state === STATE_TEAM_VIEW) {
+      if (next_state === STATE_BATTLE) {
+        this.screen[STATE_BATTLE].pause = false;
+        this.state = next_state;
+        return;
+      }
+    }
+
+    switch(this.state) {
+     case STATE_ACHIEVEMENT:
+       setup_achievements();
+       break;
+     case STATE_BATTLE:
+       if (this.screen[STATE_BATTLE].winner === PLAYER_TEAM &&
+         this.screen[STATE_BATTLE].wave === WAVE_QUANTITY) {
+         this.popup = this.screen[STATE_ACHIEVEMENT].verify_achievements();
+         this.screen[STATE_BATTLE] = new Battle();
+         upgrades = [];
+       }
+
+       if (this.screen[STATE_BATTLE].winner === ENEMY_TEAM) {
+         this.screen[STATE_BATTLE] = new Battle();
+         upgrades = [];
+       }
+       break;
+    }
+
+    if (next_state === STATE_BATTLE) {
+       this.screen[next_state].reset();
+    } else if (next_state === STATE_TEAM_EDITOR_INFO) {
+      this.screen[STATE_BATTLE].setup();
+    }
+
+    this.screen[next_state].setup();
+    this.state = next_state;
   }
 }
