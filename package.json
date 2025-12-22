@@ -2,10 +2,7 @@
   "name": "deity-of-glyphs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HTsuyoshi/deity-ofglyphs.git"
@@ -17,5 +14,8 @@
   "bugs": {
     "url": "https://github.com/HTsuyoshi/deity-ofglyphs/issues"
   },
-  "homepage": "https://github.com/HTsuyoshi/deity-ofglyphs#readme"
+  "homepage": "https://github.com/HTsuyoshi/deity-ofglyphs#readme",
+  "dependencies": {
+    "terser": "^5.44.1"
+  }
 }
