@@ -72,7 +72,7 @@ class Carrousel extends Prop {
     if (!this.hover())
       return;
 
-    this.index += ((pmouseX + WINDOW_LEFT) - MOUSE_X) / 100;
+    this.index += ((pmouseX + WINDOW_LEFT) - MOUSE_X) / 200;
     if (this.index > (this.set.length - 1)) this.index = this.set.length - 1.001; // Dont remove this .001 its purpose is to show the last index
     if (this.index < 0) this.index = 0;
   }
@@ -246,20 +246,49 @@ class ViewCarrousel extends Carrousel {
   draw_char(offset, i) {
     let c = this.set[i];
     push();
-    textSize(this.size / (1 + abs(offset)));
+    let char_size = this.size / (1 + abs(offset)),
+      off_x = - (offset * 150) + this.size * .05;
 
     MAIN_COLOR_SHADOW.setAlpha(255 - abs(offset * 255 / this.config.quantity));
     fill(MAIN_COLOR_SHADOW);
+
+    const class_char = c instanceof Char;
+    let char,
+      draw_underline = false;
+    if (class_char) { 
+      char = c.char;
+      if (c.attributes.style === STYLE_UPPERCASE) {
+        char = char.toUpperCase();
+      } else if (c.attributes.style === STYLE_BOLD) {
+        char_size = (this.size / (1 + abs(offset))) * 1.25;
+      } else if (c.attributes.style === STYLE_UNDERLINE) {
+        draw_underline = true;
+      }
+    } else {
+      char = c;
+    }
+
+    textSize(char_size);
+
     text(
-      (c instanceof Char) ? c.char : c,
-      this.pos.x - (offset * 150) + SHADOW_GAP + this.size * .05,
+      char,
+      this.pos.x + off_x + SHADOW_GAP,
       this.pos.y + SHADOW_GAP
     );
+    if (draw_underline) {
+      noStroke();
+      rect(
+        this.pos.x - (char_size * .40) + off_x + SHADOW_GAP,
+        this.pos.y + (char_size * .5) + (char_size * .1) + SHADOW_GAP,
+        char_size * .7,
+        char_size * .1
+      );
+    }
     MAIN_COLOR_SHADOW.setAlpha(255);
 
     SECOND_COLOR.setAlpha(255 - abs(offset * 255 / this.config.quantity));
     fill(SECOND_COLOR);
-    if (c instanceof Char) {
+    if (class_char) {
       if (c.attributes.current_health == 0) {
         DEAD_COLOR.setAlpha(255 - abs(offset * 255 / this.config.quantity))
         fill(DEAD_COLOR);
@@ -267,10 +296,19 @@ class ViewCarrousel extends Carrousel {
       }
     }
     text(
-      (c instanceof Char) ? c.char : c,
-      this.pos.x - (offset * 150) - SHADOW_GAP + this.size * .05,
+      char,
+      this.pos.x + off_x - SHADOW_GAP,
       this.pos.y - SHADOW_GAP
     );
+    if (draw_underline) {
+      noStroke();
+      rect(
+        this.pos.x - (char_size * .40) + off_x - SHADOW_GAP,
+        this.pos.y + (char_size * .5) + (char_size * .1) - SHADOW_GAP,
+        char_size * .7,
+        char_size * .1
+      );
+    }
     SECOND_COLOR.setAlpha(255);
     pop();
   }

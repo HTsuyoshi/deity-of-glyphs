@@ -26,10 +26,12 @@ class Game {
     this.popup = [];
     //this.screen.push(new MockBattle());
 
-    setup_achievements();
-
     this.sounds = {};
+    this.sounds_play = {};
     this.images = {};
+
+    this.color_change = 0;
+    this.shader;
   }
 
   load(audio_folder, image_folder, font_folder) {
@@ -46,13 +48,13 @@ class Game {
     this.screen[STATE_SANDBOX].load(image_folder);
     this.screen[STATE_ACHIEVEMENT].load(image_folder,
       [
+        this.screen[STATE_UPGRADE].images['angel'].img,
         this.screen[STATE_UPGRADE].images['italic'].img,
         this.screen[STATE_UPGRADE].images['bold'].img,
         this.screen[STATE_UPGRADE].images['uppercase'].img,
         this.screen[STATE_UPGRADE].images['underline'].img,
         this.screen[STATE_UPGRADE].images['sniper'].img,
-        this.screen[STATE_UPGRADE].images['sniper'].img,
-        //this.screen[STATE_UPGRADE].images['kamikaze'].img,
+        this.screen[STATE_UPGRADE].images['kamikaze'].img,
         this.screen[STATE_UPGRADE].images['explosion'].img,
         this.screen[STATE_UPGRADE].images['laser'].img,
       ]
@@ -72,12 +74,22 @@ class Game {
       dash: 'dash.wav',
       death: 'death.wav',
       hit: 'hit.wav',
+      hit_block: 'hit_block.wav',
       upgrade: 'upgrade.wav',
+      upgrade_2: 'upgrade_2.wav',
+      upgrade_4: 'upgrade_4.wav',
+      upgrade_8: 'upgrade_8.wav',
+      upgrade_16: 'upgrade_16.wav',
     };
     for (const k in sounds_load) {
       this.sounds[k] = loadSound(`${audio_folder}/${sounds_load[k]}`);
-      this.sounds[k].playMode('sustain');
+      this.sounds_play[k] = false;
+      this.sounds[k].amp(VOLUME);
     }
+  }
+
+  setup_volume() {
+    for (const k in this.sounds) this.sounds[k].amp(VOLUME);
   }
 
   setup() {
@@ -92,7 +104,7 @@ class Game {
     stroke(SECOND_COLOR);
     fill(SECOND_COLOR);
 
-    this.screen[this.state].setup();
+    this.shader = createFilterShader(frag_source);
 
     // Restore save
     //if(localStorage.getItem('save')) {
@@ -101,18 +113,14 @@ class Game {
 
     // Setup Achievements
     this.restore_save();
-    this.set_volumes();
+    this.setup_volume();
     setup_achievements();
-  }
 
-  set_volumes() {
-    for (const k in this.sounds) 
-      this.sounds[k].setVolume(VOLUME);
+    this.screen[this.state].setup();
   }
 
   draw() {
     background(MAIN_COLOR)
-    //if (this.screen[STATE_BATTLE].pause) background(lerpColor(MAIN_COLOR, MAIN_COLOR_SHADOW, 0.5));
 
     switch(this.state) {
       case STATE_MENU:
@@ -150,6 +158,12 @@ class Game {
         this.screen[STATE_UPGRADE].draw();
         break;
 
+      case STATE_TRAITS:
+        this.screen[STATE_TEAM_EDITOR].draw();
+        this.screen[STATE_TRAITS].update();
+        this.screen[STATE_TRAITS].draw();
+        break;
+
       default:
         this.screen[this.state].update();
         this.screen[this.state].draw();
@@ -161,6 +175,18 @@ class Game {
       this.popup[0].draw();
       if (this.popup[0].finished()) this.popup.splice(0, 1);
     }
+
+    for (const k in this.sounds_play) this.sounds_play[k] = false;
+
+    if (ENABLE_SHADER) filter(this.shader);
+    // Change color gradually
+    //if (this.color_change < 1) {
+    //  this.color_change += deltaTime/ 1000;
+    //} else {
+    //  this.color_change = 0;
+    //  setup_colors(true);
+    //}
+    //setup_colors_lerp(this.color_change);
   }
 
   // p5js
@@ -198,6 +224,7 @@ class Game {
         'achievements_status': ACHIEVEMENTS_STATUS,
         'achievements_unlocked': ACHIEVEMENTS_UNLOCKED,
         'volume': VOLUME,
+        'shader': ENABLE_SHADER,
         'team': get_team_word(),
       }
     );
@@ -214,6 +241,7 @@ class Game {
     ACHIEVEMENTS_STATUS = save.achievements_status;
     ACHIEVEMENTS_UNLOCKED = save.achievements_unlocked;
     VOLUME = save.volume;
+    ENABLE_SHADER = save.shader;
     team = [];
     for (let i=0; i<save.team.length; i++) {
       team[i] = new Char(PLAYER_TEAM, save.team[i]);
@@ -221,41 +249,62 @@ class Game {
   }
 
   next_state(next_state) {
-    if (this.state === STATE_BATTLE_MENU ||
-      this.state === STATE_TEAM_VIEW) {
-      if (next_state === STATE_BATTLE) {
+    for (const k in this.sounds) {
+      this.sounds[k].jump(0);
+    }
+
+    switch(this.state) {
+      case STATE_ACHIEVEMENT:
+        setup_achievements();
+        break;
+
+      case STATE_BATTLE:
+        if (this.screen[this.state].winner === PLAYER_TEAM &&
+          this.screen[this.state].wave === WAVE_QUANTITY &&
+          !this.screen[this.state].infinite_run) {
+          this.popup = this.screen[next_state].verify_achievements();
+          this.screen[STATE_BATTLE] = new Battle();
+          upgrades = [];
+        }
+
+        if (next_state !== STATE_UPGRADE &&
+          next_state !== STATE_BATTLE_MENU &&
+          next_state !== STATE_TEAM_VIEW) {
+          this.screen[STATE_BATTLE] = new Battle();
+          upgrades = [];
+        }
+        break;
+
+      case STATE_BATTLE_MENU:
+        if (next_state !== STATE_BATTLE) {
+          this.screen[STATE_BATTLE] = new Battle();
+          upgrades = [];
+        }
+        break;
+    }
+
+    if (next_state === STATE_BATTLE) {
+      if (this.state === STATE_BATTLE_MENU ||
+        this.state === STATE_TEAM_VIEW) {
         this.screen[STATE_BATTLE].pause = false;
         this.state = next_state;
         return;
       }
-    }
 
-    switch(this.state) {
-     case STATE_ACHIEVEMENT:
-       setup_achievements();
-       break;
-     case STATE_BATTLE:
-       if (this.screen[STATE_BATTLE].winner === PLAYER_TEAM &&
-         this.screen[STATE_BATTLE].wave === WAVE_QUANTITY) {
-         this.popup = this.screen[STATE_ACHIEVEMENT].verify_achievements();
-         this.screen[STATE_BATTLE] = new Battle();
-         upgrades = [];
-       }
-
-       if (this.screen[STATE_BATTLE].winner === ENEMY_TEAM) {
-         this.screen[STATE_BATTLE] = new Battle();
-         upgrades = [];
-       }
-       break;
-    }
-
-    if (next_state === STATE_BATTLE) {
-       this.screen[next_state].reset();
+      this.screen[next_state].reset();
     } else if (next_state === STATE_TEAM_EDITOR_INFO) {
       this.screen[STATE_BATTLE].setup();
     }
 
     this.screen[next_state].setup();
     this.state = next_state;
+  }
+
+
+  play_sound(sound) {
+    if (!this.sounds_play[sound]) {
+      this.sounds_play[sound] = true;
+      this.sounds[sound].play();
+    }
   }
 }

@@ -6,25 +6,64 @@ class Char extends Entity {
     this.char = char;
   }
 
-  setup() {
+  reset_upgrades() {
     for (const k in this.attributes.upgrades)
       this.attributes.upgrades[k] = 0;
+  }
+
+  setup() {
     if (this.attributes.team === PLAYER_TEAM) {
-      this.attributes.style = STYLE_ITALIC;
+      //this.attributes.style = STYLE_ITALIC;
       //this.attributes.max_health = 99999;
-      this.attributes.ammo = 10;
+      //this.attributes.ammo = 10;
+      //this.attributes.weapon = random([ATTACK_LASER, ATTACK_EXPLOSIONS, ATTACK_KAMIKAZE, ATTACK_ANGEL]);
       //this.attributes.weapon = ATTACK_LASER;
       //this.attributes.weapon = ATTACK_EXPLOSIONS;
     }
 
     if (this.attributes.team === ENEMY_TEAM) {
-      //this.attributes.ammo = 20;
-      //this.attributes.max_health = 99999;
+      ///this.attributes.ammo = 30;
+      ///this.attributes.max_health = 99999;
+      ///this.attributes.health = 99999;
       //this.attributes.weapon = ATTACK_LASER;
+      //this.attributes.weapon = ATTACK_EXPLOSIONS;
+    }
+    if (this.attributes.weapon === ATTACK_ANGEL) {
+      this.animation.spin_animation = 0;
+      this.spin_animation_vel = 1;
+      this.dolls_per_circle = this.all_ammo;
+      this.circles = 4;
+      this.dolls = [];
+
+      for (let i=0; i<this.circles; i++) {
+        const dolls_list = [];
+        for (let j=0; j<this.dolls_per_circle; j++) {
+          const doll = new Doll(this.attributes.team, random(AVAILABLE_CHARACTERS));
+          doll.attributes.pos = createVector(
+            // TODO: Create in a spiral
+            random(width * .75, width) * random_sign(),
+            random(height * .75, height) * random_sign()
+          );
+          doll.attributes.weapon = ATTACK_KAMIKAZE;
+          doll.attributes.max_health = this.all_max_health + this.all_damage;
+          doll.restore();
+          dolls_list.push(doll);
+          entities.push(doll);
+        }
+        console.log(dolls_list);
+        this.dolls.push(dolls_list);
+      }
     }
   }
 
   update_action() {
+    if (this.attributes.weapon === ATTACK_ANGEL) {
+      this.animation.spin_animation += this.spin_animation_vel * deltaTime / 1000;
+      if (this.animation.spin_animation >= 1) this.spin_animation_vel *= -1;
+      if (this.animation.spin_animation <= -1) this.spin_animation_vel *= -1;
+      this.update_dolls();
+    }
+
     // Attack
     if (this.attributes.action.name === ACTION_ATTACK) {
       if (this.attributes.weapon === ATTACK_KAMIKAZE) {
@@ -79,6 +118,53 @@ class Char extends Entity {
     }
   }
 
+  update_dolls() {
+    for (const j in this.dolls) {
+      for (let i=0; i<this.dolls[j].length; i++) {
+        let pos = createVector(this.attributes.pos.x, this.attributes.pos.y);
+        pos.add(this.circle_function(j, i));
+        //doll_list[i].attributes.pos = pos;
+        this.dolls[j][i].attributes.pos.add(pos.sub(this.dolls[j][i].attributes.pos).normalize().mult(10));
+      }
+    }
+  }
+
+  circle_function(j, i) {
+    const functions = [
+      {
+        //x: 0,
+        x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * i)) * 20,
+        y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 100
+      },
+      {
+        x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * i)) * 100,
+        y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 20
+        //y: 0
+      },
+      {
+        x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI  / this.dolls_per_circle * i)) * 75,
+        y: sin(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * (i + 1))) * 75
+      },
+      {
+        x: -sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * (i + 1))) * 75,
+        y: sin(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 75
+      },
+      //{
+      //  x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * i)) * 100,
+      //  y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 100
+      //},
+      //{
+      //  x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / 10 * i)) * 100 * sin(this.attributes.action.bar * TWO_PI),
+      //  y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / 10 * i)) * 100
+      //},
+    ];
+
+    return createVector(
+      functions[j].x,
+      functions[j].y
+    );
+  }
+
   death_animation() {
     for (let i=0; i<random(6, 12); i++) {
       const particle = new DeathParticle(
@@ -126,8 +212,12 @@ class Char extends Entity {
         this.attributes.action.bar = LASER_DURATION + 1.0;
         break;
       case ATTACK_EXPLOSIONS:
-        recoil.add(this.shoot(target)).mult(0);
+        this.shoot(target);
         this.attributes.current_ammo--;
+        break;
+      case ATTACK_ANGEL:
+        if (this.dolls.length === 0) return;
+        this.shoot(target);
         break;
       default:
         recoil.add(this.shoot(target)).mult(0.3);
@@ -152,7 +242,6 @@ class Char extends Entity {
     if (this.current_animation.particle_animation > this.animation.particle_animation) {
       for (let i=0; i<round(random(1, 3)); i++) {
         const particle = new TrailParticle(
-        //const particle = new StarParticle(
           this.attributes.pos.copy(),
           this.attributes.vel.copy()
             .normalize()

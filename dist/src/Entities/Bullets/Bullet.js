@@ -10,14 +10,14 @@ class Bullet extends SolidBullet {
     //this.target = target;
     this.target = target.attributes.pos.copy();
     this.life = 1.0;
-    game.sounds['bullet'].play();
+
+    game.play_sound('bullet');
   }
 
   // p5js
   draw() { this.draw_bullet(); }
 
   update() {
-    //if (!this.target.alive()) this.death();
     if (!this.arena_limit()) this.death();
     for (const v of entities) {
       if (v.attributes.team == this.attributes.team) continue;

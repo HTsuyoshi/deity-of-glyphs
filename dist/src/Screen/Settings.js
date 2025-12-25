@@ -21,6 +21,12 @@ class Settings extends Screen {
       { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
     )
 
+    this.enable_shader = new TextButton(
+      `Shader: ${ENABLE_SHADER ? 'on' : 'off'}`,
+      { x: 0, y: 0},
+      { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
+    )
+
     this.return = new TextButton(
       '<',
       { x: 0, y: 0},
@@ -30,6 +36,7 @@ class Settings extends Screen {
 
     this.buttons = [];
     this.buttons.push(this.change_color);
+    this.buttons.push(this.enable_shader);
     this.buttons.push(this.return);
     this.resize();
   }
@@ -45,8 +52,8 @@ class Settings extends Screen {
     if (this.sliders[0].hover()) {
       this.sliders[0].mouseClicked();
       VOLUME = this.sliders[0].value;
-      game.set_volumes();
-      game.sounds['dash'].play();
+      game.setup_volume();
+      game.play_sound('dash');
     }
 
     if (this.change_color.hover()) {
@@ -54,6 +61,11 @@ class Settings extends Screen {
       stroke(SECOND_COLOR);
       fill(SECOND_COLOR);
       this.setup();
+    }
+
+    if (this.enable_shader.hover()) {
+      ENABLE_SHADER = !ENABLE_SHADER;
+      this.setup_ui();
     }
     if (this.return.hover()) return STATE_MENU;
   }
@@ -67,6 +79,7 @@ class Settings extends Screen {
   resize() {
     this.volume.resize(0, -150);
     this.change_color.resize(0, 0);
+    this.enable_shader.resize(0, 150);
     this.return.resize(WINDOW_LEFT + (SQUARE_BUTTON * .5) + 20, WINDOW_TOP + (SQUARE_BUTTON * .5) + 20);
   }
 

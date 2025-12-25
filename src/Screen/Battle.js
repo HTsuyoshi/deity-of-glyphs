@@ -4,6 +4,17 @@ class Battle extends Screen {
 
     this.reset();
 
+    this.current_animation = {
+      player: 0.0,
+      enemy: 0.0,
+    };
+    this.animation = {
+      player: 1.0,
+      enemy: 1.0,
+    };
+
+    this.infinite_run = true;
+
     this.layer = null;
     this.layer_img = null;
     this.wave = 0;
@@ -13,6 +24,14 @@ class Battle extends Screen {
     super.setup();
     bullets = [];
     particles = [];
+    for (const i in ACHIEVEMENTS_UNLOCKED) {
+      for (const j in ACHIEVEMENTS_UNLOCKED[i]) { 
+        if (!ACHIEVEMENTS_UNLOCKED[i][j])
+          this.infinite_run = false;
+        if (!this.infinite_run) break;
+      }
+      if (!this.infinite_run) break;
+    }
     this.setup_entities();
   }
 
@@ -52,11 +71,13 @@ class Battle extends Screen {
       local_team.push(new Char(PLAYER_TEAM, c.char));
 
     const local_enemy_team = enemy_team.slice();
-    local_team.forEach((v) => v.setup());
-    local_enemy_team.forEach((v) => v.setup());
+    local_team.forEach((v) => v.reset_upgrades());
+    local_enemy_team.forEach((v) => v.reset_upgrades());
     this.apply_buffs(local_team);
     this.apply_buffs(local_enemy_team);
     this.apply_upgrades(local_team, upgrades);
+    local_team.forEach((v) => v.setup());
+    local_enemy_team.forEach((v) => v.setup());
     local_team.forEach((v) => v.restore());
     local_enemy_team.forEach((v) => v.restore());
 
@@ -69,7 +90,7 @@ class Battle extends Screen {
     enemy_team = [];
 
     let enemy_alphabet = [...VOWELS],
-      enemy_qty = TEAM_SIZE - 3 + this.wave;
+      enemy_qty = TEAM_SIZE - 2 + this.wave;
 
     if (ACHIEVEMENTS_UNLOCKED[1][0] &&
       ACHIEVEMENTS_STATUS[1][0]) {
@@ -93,12 +114,18 @@ class Battle extends Screen {
       if (traits.length === 1 &&
         traits[0] === 'special') {
         enemy_team = [];
-        enemy_team.push(new Char(ENEMY_TEAM, random(enemy_alphabet)));
-        enemy_team.push(new Boss(ENEMY_TEAM, 'c'));
-        enemy_team.push(new Char(ENEMY_TEAM, random(enemy_alphabet)));
+        enemy_team.push(new Char(ENEMY_TEAM, random(SPECIALS)));
+        enemy_team.push(new Char(ENEMY_TEAM, random(SPECIALS)));
+        enemy_team.push(new Char(ENEMY_TEAM, random(SPECIALS)));
+        enemy_team[0].attributes.weapon = ATTACK_LASER;
+        enemy_team[0].attributes.max_health = 50;
+        enemy_team[1].attributes.weapon = ATTACK_ANGEL;
+        enemy_team[1].attributes.ammo = 10;
+        enemy_team[1].attributes.max_health = 50;
+        enemy_team[2].attributes.weapon = ATTACK_LASER;
+        enemy_team[2].attributes.max_health = 50;
       }
     }
-    enemy_team.push(new Boss(ENEMY_TEAM, '@'));
 
     const word = get_team_word();
 
@@ -119,7 +146,7 @@ class Battle extends Screen {
     if (word === 'sniper') {
       for (const e of enemy_team)
         e.attributes.weapon = ATTACK_SNIPER;
-    } else if (word === 'kamikaze') {
+    } else if (word === 'banzai') {
       for (const e of enemy_team)
         e.attributes.weapon = ATTACK_KAMIKAZE;
     } else if (word === 'bomb') {
@@ -129,8 +156,6 @@ class Battle extends Screen {
       for (const e of enemy_team)
         e.attributes.weapon = ATTACK_LASER;
     }
-    //if (ACHIEVEMENTS_UNLOCKED[0][3])
-
   }
 
   setup_pos(local_team) {
@@ -164,7 +189,7 @@ class Battle extends Screen {
       for (const b in buff) {
         for (const v of local_team) {
           if (v.attributes.trait != k) continue;
-          v.attributes.upgrades[b] += buff[b] * min(traits[k], 3);
+          v.attributes.upgrades[b] += buff[b] * min(traits[k], TRAIT_LIMIT);
         }
       }
     }
@@ -187,10 +212,10 @@ class Battle extends Screen {
         continue;
       }
       for (const b in u.buffs) {
-        for (const v of local_team) {
-          if (v.attributes.trait != u.trait) continue;
-          v.attributes.upgrades[b] += u.buffs[b];
-        }
+        local_team.forEach((v) => {
+          if (v.attributes.trait != u.trait) return;
+          v.attributes.upgrades[b] += (u.buffs[b] * u.multiplier);
+        });
       }
     }
   }
@@ -199,12 +224,12 @@ class Battle extends Screen {
   mouseClicked() {
     if (this.finish) {
       if (this.winner === ENEMY_TEAM) {
-        // TODO: Statistics
         return STATE_TEAM_EDITOR;
       }
 
       if (this.winner === PLAYER_TEAM) {
-        if (this.wave === WAVE_QUANTITY) {
+        if ((this.wave === WAVE_QUANTITY) &&
+          !this.infinite_run) {
           return STATE_ACHIEVEMENT;
         }
         this.start = false;
@@ -236,10 +261,12 @@ class Battle extends Screen {
   }
 
   draw() {
+    //push();
+    //textSize(CHARACTER_SIZE * 2);
+    //text(GAME_TITLE, 0, 0);
+    //pop();
     if (this.pause) {
       image(this.layer_img, -this.layer_img.width * .5, -this.layer_img.height * .5);
-      //this.draw_battlefield();
-      //filter(BLUR, 2);
     } else {
       this.draw_battlefield();
     }
@@ -276,7 +303,6 @@ class Battle extends Screen {
 
   // Draw
   freeze() {
-    //this.layer = createFramebuffer();
     this.layer.begin();
     background(MAIN_COLOR);
     this.draw_battlefield();
@@ -285,7 +311,20 @@ class Battle extends Screen {
     this.layer_img = this.layer.get();
   }
 
-  draw_wave() { text(`Wave ${this.wave + 1}`, 0, 0); }
+  draw_wave() {
+    let t = `Wave ${this.wave + 1}`;
+    const traits = Object.keys(count_traits(team));
+    if (traits.length === 1 &&
+      traits[0] === 'special' &&
+      !ACHIEVEMENTS_UNLOCKED[1][3]) {
+      if (this.wave === 0) t = 'You are not alone';
+      if (this.wave === 1) t = 'You have been called';
+      if (this.wave === 2) t = 'The lord has heard\nyour cry';
+      if (this.wave === 3) t = 'You have found favor\nwith God';
+      if (this.wave === 4) t = 'Be not afraid';
+    }
+    text(t, 0, 0);
+  }
   draw_finish() { text(this.winner, 0, 0); }
 
   draw_battlefield() {

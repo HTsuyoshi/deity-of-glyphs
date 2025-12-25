@@ -15,7 +15,7 @@ class Explosion extends SolidBullet {
     this.off = 0;
     this.timer = random(2, 3);
     this.explosion_duration = 1;
-    this.rot_vel = random(HALF_PI, PI * 2) * random_sign();
+    this.rot_vel = random(HALF_PI, TWO_PI) * random_sign();
     this.rot = 0;
 
     this.play_sound = true;
@@ -43,7 +43,7 @@ class Explosion extends SolidBullet {
       return;
     }
     if (this.timer <= 0 && this.play_sound) {
-      game.sounds['explosion'].play();
+      game.play_sound('explosion');
       this.play_sound = false;
     }
 

@@ -5,7 +5,6 @@ class Entity extends Solid {
       team: -1,
       trait: '',
       style: STYLE_NORMAL,
-      //style: STYLE_UPPERCASE,
       weapon: ATTACK_SEMI_AUTO,
       current_ammo: 1,
       ammo: 1,
@@ -193,6 +192,19 @@ class Entity extends Solid {
           target
         );
         break;
+      case ATTACK_ANGEL:
+        const dolls_list = random(this.dolls);
+        const doll = random(dolls_list);
+    
+        let i = dolls_list.indexOf(doll);
+        if (i > -1) dolls_list.splice(i, 1);
+
+        doll.attributes.action.name = ACTION_ATTACK;
+        if (dolls_list.length !== 0) return;
+
+        i = this.dolls.indexOf(dolls_list);
+        if (i > -1) this.dolls.splice(i, 1);
+        return;
       default:
         vel = vel
           .rotate(random(-QUARTER_PI, QUARTER_PI))
@@ -209,6 +221,7 @@ class Entity extends Solid {
     }
 
     bullets.push(bullet);
+    bullet = null;
     return vel;
   };
 
@@ -219,16 +232,17 @@ class Entity extends Solid {
     let i = entities.indexOf(this);
     if (i > -1) entities.splice(i, 1);
     this.death_animation();
-    game.sounds['death'].play();
+    game.play_sound('death');
   }
 
   damage(quantity) {
     if (this.block) {
       this.block = false;
-      //game.sounds['hit_block'].play();
+      game.play_sound('hit_block');
       return;
     }
-    game.sounds['hit'].play();
+
+    game.play_sound('hit');
     this.current_animation.show_bar = 0;
     this.attributes.current_health = max(this.attributes.current_health - quantity, 0);
     if (this.attributes.current_health <= 0) this.death();
@@ -236,8 +250,9 @@ class Entity extends Solid {
 
   next_action() {
     const action = random([ACTION_WALK, ACTION_ATTACK]);
-    if (action === ACTION_WALK && this.attributes.style === STYLE_ITALIC)
-      game.sounds['dash'].play();
+    if (action === ACTION_WALK && this.attributes.style === STYLE_ITALIC) {
+      game.play_sound('dash');
+    }
     return action;
   }
 

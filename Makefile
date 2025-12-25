@@ -23,7 +23,6 @@ SRC = 	./src/common.js \
 	./src/Entities/Entity.js \
 	./src/Entities/Char.js \
 	./src/Entities/Doll.js \
-	./src/Entities/Boss.js \
 	./src/UI/Prop.js \
 	./src/UI/Button.js \
 	./src/UI/Carrousel.js \
@@ -38,6 +37,11 @@ all:
 	npx terser $(BUNDLE) -o $(MINIFIED) --compress --mangle
 	rm $(BUNDLE)
 	cp -r audio font images src style.css dist
+
+zip: all
+	cd dist
+	zip -r -9 DoG.zip *
+	cd ..
 
 clean:
 	rm -r dist/audio dist/font dist/images dist/style.css

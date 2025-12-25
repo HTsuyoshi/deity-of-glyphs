@@ -1,5 +1,6 @@
 // Constants
-const STATE_MENU = 0,
+const DOG_VERSION = 'v1.0.0'
+      STATE_MENU = 0,
       STATE_TEAM_EDITOR = 1,
       STATE_TEAM_EDITOR_INFO = 2,
       STATE_BATTLE = 3,
@@ -25,6 +26,7 @@ const STATE_MENU = 0,
       ATTACK_LASER = 5,
       ATTACK_EXPLOSIONS = 6,
       ATTACK_SNIPER = 7,
+      ATTACK_ANGEL = 8,
       WEAPON_NAME = [
         'melee',
         'auto',
@@ -34,6 +36,7 @@ const STATE_MENU = 0,
         'laser',
         'explosions',
         'sniper',
+        'angel',
       ],
       GHOST_LENGTH = 5,
       LASER_DURATION = 3.0
@@ -53,7 +56,7 @@ const STATE_MENU = 0,
       PLAYER_TEAM = 'PLAYER',
       SHADOW_GAP = 4,
       STROKE_WEIGHT = 4,
-      GAME_TITLE = 'Letter Wars',
+      GAME_TITLE = 'Deity of\nGlyphs',
       NUMBERS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
       VOWELS = ['a', 'e', 'i', 'o', 'u'],
       CONSONANTS = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'],
@@ -75,20 +78,20 @@ let IMAGES = {},
   WAVE_QUANTITY = 5,
   AVAILABLE_CHARACTERS,
   TEAM_SIZE,
+  TRAIT_LIMIT,
   ENEMY_TEAM_SIZE,
   AVAILABLE_UPGRADES,
   ACHIEVEMENTS_STATUS = [
-    [true, true, true, true], // Team size
-    [true, true, true, false], // Alphabets
-    //[true, true, true, true], // Styles
-    //[true, true, true, true], // Weapons
-    [false, false, false, false],
-    [false, false, false, false],
+    [false, false, false, false], // Team size
+    [false, false, false, false], // Alphabets
+    [false, false, false, false], // Styles
+    [false, false, false, false], // Weapons
+    [false, false, false, false], // Multipliers
   ],
   ACHIEVEMENTS_UNLOCKED = [
-    //[true, true, true, true],
-    [true, true, true, true],
-    [true, true, true, false],
+    [false, false, false, false],
+    [false, false, false, false],
+    [false, false, false, false],
     [false, false, false, false],
     [false, false, false, false],
   ];
@@ -98,6 +101,7 @@ setup_values();
 function setup_values() {
   AVAILABLE_CHARACTERS = [...VOWELS];
   TEAM_SIZE = 4;
+  TRAIT_LIMIT = 3;
   ENEMY_TEAM_SIZE = 3;
   AVAILABLE_UPGRADES = [
     { buffs: { ammo: UPGRADE_AMMO } },
@@ -106,10 +110,6 @@ function setup_values() {
     { buffs: { damage: UPGRADE_DAMAGE * .5,
       max_health: UPGRADE_HEALTH * .5 } },
     { weapon: ATTACK_SEMI_AUTO },
-    { style: STYLE_BOLD },
-    { style: STYLE_ITALIC },
-    { style: STYLE_UPPERCASE },
-    { style: STYLE_UNDERLINE },
   ];
 }
 
@@ -155,9 +155,7 @@ function setup_achievements() {
   setup_values();
   for (let i=0; i<ACHIEVEMENTS_UNLOCKED.length; i++) {
     for (let j=0; j<ACHIEVEMENTS_UNLOCKED[i].length; j++) {
-      if (ACHIEVEMENTS_STATUS[i][j]) {
-        change_achievement(i, j, ACHIEVEMENTS_STATUS[i][j]);
-      }
+      change_achievement(i, j, ACHIEVEMENTS_STATUS[i][j]);
     }
   }
   if (team.length > TEAM_SIZE) {
@@ -174,8 +172,9 @@ function setup_achievements() {
 function change_achievement(i, j, activate) {
   if (i === 0) {
     if (activate) TEAM_SIZE++;
-    else TEAM_SIZE--;
+    return;
   }
+
   if (i === 1) {
     let characters = [];
     if (j === 0) characters = CONSONANTS;
@@ -186,24 +185,31 @@ function change_achievement(i, j, activate) {
       AVAILABLE_CHARACTERS = AVAILABLE_CHARACTERS.concat(characters);
     } else {
       AVAILABLE_CHARACTERS = AVAILABLE_CHARACTERS.filter(
-        char => characters.includes(char)
+        char => !characters.includes(char)
       );
+    }
 
+    if (j === 3) {
+      if (activate) AVAILABLE_UPGRADES.push({ weapon: ATTACK_ANGEL });
+      else AVAILABLE_UPGRADES = AVAILABLE_UPGRADES
+        .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify({ weapon: ATTACK_ANGEL }));
     }
     return;
   }
+
   if (i === 2) {
     const new_style = [STYLE_ITALIC, STYLE_BOLD, STYLE_UPPERCASE, STYLE_UNDERLINE];
     if (activate) AVAILABLE_UPGRADES.push({ style: new_style[j] });
     else AVAILABLE_UPGRADES = AVAILABLE_UPGRADES
-      .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify({ style: new_style }));
+      .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify({ style: new_style[j] }));
     return;
   }
+
   if (i === 3) {
     const new_weapon = [ATTACK_SNIPER, ATTACK_KAMIKAZE, ATTACK_EXPLOSIONS, ATTACK_LASER];;
     if (activate) AVAILABLE_UPGRADES.push({ weapon: new_weapon[j] });
     else AVAILABLE_UPGRADES = AVAILABLE_UPGRADES
-      .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify({ weapon: new_weapon }));
+      .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify({ weapon: new_weapon[j] }));
     return;
   }
 }
@@ -222,6 +228,19 @@ function setup_colors(change) {
   BULLET_COMPLEMENTARY_COLOR = c.bullet_complementary;
 }
 
+function setup_colors_lerp(l) {
+  const c0 = COLORS[CURRENT_COLORS],
+    c1 = COLORS[(CURRENT_COLORS + 1) % COLORS.length];
+  MAIN_COLOR = lerpColor(c0.main, c1.main, l);
+  MAIN_COLOR_SHADOW = lerpColor(c0.shadow, c1.shadow, l);
+  DEAD_COLOR = lerpColor(c0.dead, c1.dead, l);
+  UPGRADE_COLOR = lerpColor(c0.upgrade, c1.upgrade, l);
+  SECOND_COLOR = lerpColor(c0.second, c1.second, l);
+  TEAM_COLOR = lerpColor(c0.team, c1.team, l);
+  BULLET_COLOR = lerpColor(c0.bullet, c1.bullet, l);
+  BULLET_COMPLEMENTARY_COLOR = lerpColor(c0.bullet_complementary, c1.bullet_complementary, l);
+}
+
 // UI
 function isMobile() {
   const userAgent = navigator.userAgent.toLowerCase();
@@ -238,14 +257,18 @@ let BUTTON_WIDTH = 250,
     BUTTON_HEIGHT = 100,
     SQUARE_BUTTON = 50,
     CHARACTER_SIZE = 32,
-    SMALL_SCREEN = false;
+    UPGRADE_CARD_WIDTH = 250,
+    UPGRADE_CARD_HEIGHT = 200,
+    SMALL_SCREEN = false,
+    ENABLE_SHADER = true;
 
 if (isMobile()) {
   BUTTON_WIDTH = 200;
   BUTTON_HEIGHT = 100;
   SQUARE_BUTTON = 50;
   CHARACTER_SIZE *= .7;
-  // TODO: Make everthing that has hit box scale with CHARACTER_SIZE
+  UPGRADE_CARD_WIDTH = 200;
+  UPGRADE_CARD_HEIGHT = 150;
 }
 
 // Optimization
@@ -315,4 +338,9 @@ function point_line_dist(p, s0, s1) {
   let num = abs((s1.y - s0.y) * p.x - (s1.x - s0.x) * p.y + s1.x * s0.y - s1.y * s0.x);
   let denom = p5.Vector.dist(s0, s1);
   return num / denom;
+}
+
+function capitalize(s) {
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }

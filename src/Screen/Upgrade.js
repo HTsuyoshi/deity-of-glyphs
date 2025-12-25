@@ -1,15 +1,10 @@
-// Font
-// Palindromo
-// Anagrama
-// Equal words
-// Accentuation
-
 class Upgrade extends Screen {
   constructor() {
     super();
     this.upgrades = [];
     this.images = {
       ammo_up: { src: 'upgrades/ammo_up.png', img: null },
+      damage_health_up: { src: 'upgrades/damage_health_up.png', img: null },
       damage_up: { src: 'upgrades/damage_up.png', img: null },
       health_up: { src: 'upgrades/health_up.png', img: null },
       semi: { src: 'upgrades/semi.png', img: null },
@@ -18,7 +13,8 @@ class Upgrade extends Screen {
       laser: { src: 'upgrades/laser.png', img: null },
       explosion: { src: 'upgrades/explosion.png', img: null },
       sniper: { src: 'upgrades/sniper.png', img: null },
-      //kamikaze: { src: 'upgrades/sniper.png', img: null },
+      kamikaze: { src: 'upgrades/kamikaze.png', img: null },
+      angel: { src: 'upgrades/angel.png', img: null },
       bold: { src: 'upgrades/bold.png', img: null },
       italic: { src: 'upgrades/italic.png', img: null },
       uppercase: { src: 'upgrades/uppercase.png', img: null },
@@ -42,14 +38,15 @@ class Upgrade extends Screen {
 
   reset_upgrades() {
     this.upgrades = [];
-    let size = createVector(250, 200);
+    let size = { x: UPGRADE_CARD_WIDTH, y: UPGRADE_CARD_HEIGHT };
     for (let i=3; i>0;i--) {
+      const upgrade = this.random_upgrade();
       this.upgrades.push(
         new UpgradeCard(
           createVector(0, 0),
           size,
           i * .5,
-          this.random_upgrade(),
+          upgrade,
           this.images
         )
       );
@@ -74,7 +71,8 @@ class Upgrade extends Screen {
 
     for (const v of this.upgrades) {
       if (v.hover()) {
-        game.sounds['upgrade'].play();
+        if (v.multiplier > 1) game.play_sound(`upgrade_${v.multiplier}`);
+        else game.play_sound('upgrade');
         upgrades.push(v.upgrade);
         return STATE_BATTLE;
       }
@@ -84,7 +82,8 @@ class Upgrade extends Screen {
   resize() {
     const len = this.upgrades.length;
     for (let i=3; i>0; i--) {
-      this.upgrades[len - i].resize(0, WINDOW_TOP + (i * height * .25));
+      if (MOBILE) this.upgrades[len - i].resize(0, WINDOW_TOP + (height * .1) + (i * height * .22));
+      else this.upgrades[len - i].resize(0, WINDOW_TOP + (i * height * .25));
     }
 
     this.skip.resize(
@@ -98,7 +97,7 @@ class Upgrade extends Screen {
   random_upgrade() {
     const traits = count_traits(team),
       trait = random(Object.keys(traits));
-    let available_upgrades = [...AVAILABLE_UPGRADES];
+    let available_upgrades = AVAILABLE_UPGRADES.map(map => Object.assign({}, map));
 
     // Equip weapon
     const trait_upgrades = upgrades.filter(upgrade => upgrade.trait === trait);
@@ -114,29 +113,50 @@ class Upgrade extends Screen {
     available_upgrades.forEach((u) => u.trait = trait);
 
     // Remove repeated weapon
-    const weapons = [... new Set(team
+    const weapons = [... new Set(team_battlefield
       .filter(char => char.attributes.trait === trait)
       .map(char => char.attributes.weapon))];
 
     // Remove repeated styles
-    const styles = [... new Set(team
+    const styles = [... new Set(team_battlefield
       .filter(char => char.attributes.trait === trait)
       .map(char => char.attributes.style))];
 
     available_upgrades = available_upgrades.filter(upgrade => !weapons.includes(upgrade.weapon));
     available_upgrades = available_upgrades.filter(upgrade => !styles.includes(upgrade.style));
-    // Remove style Upper case if trait is special
+
+    // Remove style Upper case if trait is special or number
     if (trait === 'special' || trait === 'number')
       available_upgrades = available_upgrades.filter(upgrade => upgrade.style !== STYLE_UPPERCASE);
 
     if (this.upgrades.length > 0) {
+      // Remove Style or Weapon if already has upgrade of one of them
+      for (const u of this.upgrades) {
+        if ('style' in u.upgrade)
+          available_upgrades = available_upgrades.filter(upgrade => !('style' in upgrade));
+
+        if ('weapon' in u.upgrade)
+          available_upgrades = available_upgrades.filter(upgrade => !('weapon' in upgrade));
+      }
+
       // Do not repeat upgrades
       for (const remove of this.upgrades.filter(upgrade => upgrade.upgrade.trait === trait)) {
         available_upgrades = available_upgrades
-          .filter(upgrade => JSON.stringify(upgrade) !== JSON.stringify(remove.upgrade));
+          .filter(upgrade => !this.compare_upgrades(upgrade, remove.upgrade));
       }
     }
 
     return random(available_upgrades);
+  }
+
+  compare_upgrades(d1, d2) {
+    const keys1 = Object.keys(d1).filter(k => k !== 'multiplier'),
+      keys2 = Object.keys(d2).filter(k => k !== 'multiplier');
+
+    if (keys1.length !== keys2.length) return false;
+
+    return keys1.every(
+      key => d2.hasOwnProperty(key) && d1[key] === d2[key]
+    );
   }
 }

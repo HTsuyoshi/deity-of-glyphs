@@ -87,53 +87,61 @@ class TeamView extends Screen {
   // Draw
   draw_char_info() {
     const char = this.team_carrousel.current_char(),
+      gap = MOBILE ? CHARACTER_SIZE : CHARACTER_SIZE * .5,
       off_x = - textWidth('Max Health: 10 + 10 2') * .5,
-      gap = MOBILE ? CHARACTER_SIZE : CHARACTER_SIZE * .5;
+      off_y = WINDOW_BOTTOM - (240 + CHARACTER_SIZE + (gap * 2));
     push();
     fill(MAIN_COLOR);
     rect(
       off_x - gap,
-      this.carrousel_height - 160 - (CHARACTER_SIZE * .5) - gap,
+      off_y - (CHARACTER_SIZE * .5) - gap,
       abs(off_x - gap) * 2,
-      200 + CHARACTER_SIZE + (gap * 2));
-    pop();
-    this.draw_attributes(
-      'Damage',
-      char.attributes.damage,
-      char.attributes.upgrades.damage,
-      { x: off_x, y: this.carrousel_height - 160 },
-      (char.attributes.style === STYLE_BOLD) ? STYLE_BOLD : STYLE_NORMAL
+      240 + CHARACTER_SIZE + (gap * 2)
     );
+    pop();
     this.draw_attributes(
       'Weapon',
       WEAPON_NAME[char.attributes.weapon],
       null,
-      { x: off_x, y: this.carrousel_height - 120 },
+      { x: off_x, y: off_y },
+    );
+    this.draw_attributes(
+      'Damage',
+      char.attributes.damage,
+      char.attributes.upgrades.damage,
+      { x: off_x, y: off_y + 40 },
+      (char.attributes.style === STYLE_BOLD) ? STYLE_BOLD : STYLE_NORMAL
     );
     this.draw_attributes(
       'Ammo',
       char.attributes.ammo,
       char.attributes.upgrades.ammo,
-      { x: off_x, y: this.carrousel_height - 80 },
+      { x: off_x, y: off_y + 80 },
     );
     this.draw_attributes(
       'Health',
       char.attributes.current_health,
       null,
-      { x: off_x, y: this.carrousel_height - 40 },
+      { x: off_x, y: off_y + 120 },
     );
     this.draw_attributes(
       'Max Health',
       char.attributes.max_health,
       char.attributes.upgrades.max_health,
-      { x: off_x, y: this.carrousel_height },
+      { x: off_x, y: off_y + 160 },
       (char.attributes.style === STYLE_UPPERCASE) ? STYLE_UPPERCASE : STYLE_NORMAL
     );
     this.draw_attributes(
       'Trait',
       char.attributes.trait,
       null,
-      { x: off_x, y: this.carrousel_height + 40 },
+      { x: off_x, y: off_y + 200 },
+    );
+    this.draw_attributes(
+      'Style',
+      STYLE_NAME[char.attributes.style],
+      null,
+      { x: off_x, y: off_y + 240 },
     );
   }
 

@@ -1,15 +1,14 @@
-//TODO: Fix when current selected alphabet isnt unlocked in the achievements
-
 class TeamEditor extends Screen {
   constructor() {
     super();
-    this.index_carrousel = 0;
     this.images = {
       traits: { src: 'icons/traits.png', img: null },
     };
   }
 
   setup_ui() {
+    this.index_carrousel = 0;
+
     // Current team carrousel
     this.team_carrousel = new ViewCarrousel(
       createVector(0, 0),
@@ -172,7 +171,6 @@ class TeamEditor extends Screen {
   }
 
   touchEnded() {
-    // TODO: If you drop the character in a button, it shouldnt click the button
     this.team_carrousel.touchEnded();
     if (this.current_carrousel.touchEnded()) {
       if (this.team_carrousel.hover()) {

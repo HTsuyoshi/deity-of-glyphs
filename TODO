@@ -1,13 +1,29 @@
 # TODO
 
-1.   [ ] - Show buff information in TeamEditorView
-2.   [ ] - Create MELEE
-3.   [ ] - Mudar a cor do jogo gradualmetne
-4.   [ ] - Create background
-4.1  [ ] - Notebook lines as background
-5.   [ ] - Create upgrade sandevistan
-10.  [ ] - Create animation between Screen change
-[ ] - Sounds
+1.  [ ] - Create MELEE
+2.  [ ] - Create background
+2.1 [ ] - Notebook lines as background
+2.2 [ ] - A lot of Lines and textures like the one that i saw
+          in a hatsune miku video taht looks like the thing on a table
+3.  [ ] - Create upgrade sandevistan
+4.  [ ] - Create animation between Screen change
+5.  [ ] - Sounds
+6.  [ ] - Improve shader shadow
+6.1 [ ] - Glitch Effect
+7.  [ ] - Intro before battle presenting your team and the enemy team
+7.1 [ ] - Rect thats starts as a line then grow in width with
+           easeIn with your team
+8   [ ] - Fix auto semi and shotgun options
+
+// Shaders
+// https://editor.p5js.org/boettcher.f/sketches/J4NUvnMNK
+// https://editor.p5js.org/BarneyCodes/sketches/XUer03ShM
+
+// Palindromo
+// Anagrama
+// Equal words
+// Accentuation
+
 
 Limiter fps
 Verify why cellphones are capped at 45 frames

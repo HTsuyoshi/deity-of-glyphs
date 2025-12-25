@@ -39,15 +39,28 @@ class Menu extends Screen {
 
       case BACKGROUND_ALIVE:
         this.title = [];
-        const char_list = GAME_TITLE.split('');
-        for (let i=0; i<char_list.length; i++) {
-          const temp = new ViewChar(-1, char_list[i]);
+        const title_top = GAME_TITLE.split('\n')[0].split(''),
+          title_bottom = GAME_TITLE.split('\n')[1].split('');
+        for (let i=0; i<title_top.length; i++) {
+          const temp = new ViewChar(-1, title_top[i]);
           temp.setup();
           temp.attributes.pos =
             createVector(
-              - (GAME_TITLE.length * CHARACTER_SIZE * .5)
+              - (title_top.length * CHARACTER_SIZE * .5)
               + (i * CHARACTER_SIZE),
-              WINDOW_TOP + this.off_y * 1
+              WINDOW_TOP + (this.off_y * 1) - (CHARACTER_SIZE * 1)
+            );
+          this.title.push(temp);
+        }
+
+        for (let i=0; i<title_bottom.length; i++) {
+          const temp = new ViewChar(-1, title_bottom[i]);
+          temp.setup();
+          temp.attributes.pos =
+            createVector(
+              - (title_bottom.length * CHARACTER_SIZE * .5)
+              + (i * CHARACTER_SIZE),
+              WINDOW_TOP + (this.off_y * 1) + (CHARACTER_SIZE * 1.5)
             );
           this.title.push(temp);
         }
@@ -78,6 +91,7 @@ class Menu extends Screen {
       'Sandbox',
       { x: 0, y: 0},
       { x: BUTTON_WIDTH, y: BUTTON_HEIGHT },
+      false,
     );
     this.settings = new TextButton(
       'Settings',
@@ -111,8 +125,9 @@ class Menu extends Screen {
   mouseClicked() {
     if (this.new_game.hover()) return STATE_TEAM_EDITOR;
     if (this.achievement.hover()) return STATE_ACHIEVEMENT;
-    if (this.sandbox.hover()) return STATE_SANDBOX;
+    //if (this.sandbox.hover()) return STATE_SANDBOX;
     if (this.settings.hover()) return STATE_SETTINGS;
+    if (this.social.hover()) window.open('https://github.com/HTsuyoshi/deity-of-glyphs', '_blank');
   }
 
   resize() { 
@@ -147,15 +162,41 @@ class Menu extends Screen {
     this.current_delay += deltaTime / 1000;
     if (this.current_delay > this.delay) {
       this.current_delay = 0;
-
       if (mouseIsPressed) this.interact();
     }
+    this.draw_version();
   }
 
   draw_title() {
     push();
     textSize(CHARACTER_SIZE * 2);
-    text(GAME_TITLE, 0, WINDOW_TOP + this.off_y * 1);
+    text(GAME_TITLE, 0, WINDOW_TOP + (this.off_y * 1));
+    pop();
+  }
+
+  draw_version() {
+    const size = 200;
+    push();
+    translate(
+      WINDOW_RIGHT - (size * .25),
+      WINDOW_TOP + (size * .25)
+    );
+    rotate(QUARTER_PI);
+    textSize(CHARACTER_SIZE);
+    noStroke();
+    fill(DEAD_COLOR);
+    rect(
+      - (size * .5),
+      - (CHARACTER_SIZE * .5),
+      200,
+      CHARACTER_SIZE * 1.2
+    );
+    fill(SECOND_COLOR);
+    text(
+      DOG_VERSION,
+      0,
+      0
+    );
     pop();
   }
 
@@ -209,7 +250,6 @@ class Menu extends Screen {
 
     for (const v of array) {
       const pos = (is_matrix) ? v.pos : v.attributes.pos;
-      //if (mouse.dist(pos) > 100) continue;
       if (distSquared(mouse.x, mouse.y, pos.x, pos.y)> 10000) continue;
       if (is_matrix)
         v.vel

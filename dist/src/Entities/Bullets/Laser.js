@@ -41,7 +41,7 @@ class Laser extends SolidBullet {
       return;
     } else if (this.current_duration < (LASER_DURATION - .5)) {
       if (this.play_audio) {
-        game.sounds['laser'].play();
+        game.play_sound('laser');
         this.play_audio = false;
       }
       this.laser_width = this.base_width * (LASER_DURATION - .5);
