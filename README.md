@@ -88,4 +88,16 @@ classDiagram
         Prop <|-- Popup
         Prop <|-- Slider
         Prop <|-- UpgradeCard
+
+        Screen <|-- Achievement
+        Screen <|-- Battle
+        Screen <|-- BattleMenu
+        Screen <|-- Menu
+        Screen <|-- SandBox
+        Screen <|-- Settings
+        Screen <|-- TeamEditor
+        Screen <|-- TeamView
+        Screen <|-- TeamViewEditor
+        Screen <|-- Traits
+        Screen <|-- Upgrade
 ```
