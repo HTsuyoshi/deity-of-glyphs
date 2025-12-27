@@ -237,25 +237,25 @@ class Achievement extends Screen {
       switch(traits[0]) {
         case 'vowel':
           if (ACHIEVEMENTS_UNLOCKED[1][0]) break;
-          popup.push(new Popup('Vowels', this.images['0'].img));
+          popup.push(new Popup('Vowels', this.images['4'].img));
           ACHIEVEMENTS_UNLOCKED[1][0] = true;
           ACHIEVEMENTS_STATUS[1][0] = true;
           break;
         case 'consonant':
           if (ACHIEVEMENTS_UNLOCKED[1][1]) break;
-          popup.push(new Popup('Consonants', this.images['1'].img));
+          popup.push(new Popup('Consonants', this.images['5'].img));
           ACHIEVEMENTS_UNLOCKED[1][1] = true;
           ACHIEVEMENTS_STATUS[1][1] = true;
           break;
         case 'number':
           if (ACHIEVEMENTS_UNLOCKED[1][2]) break;
-          popup.push(new Popup('Numbers', this.images['2'].img));
+          popup.push(new Popup('Numbers', this.images['6'].img));
           ACHIEVEMENTS_UNLOCKED[1][2] = true;
           ACHIEVEMENTS_STATUS[1][2] = true;
           break;
         case 'special':
           if (ACHIEVEMENTS_UNLOCKED[1][3]) break;
-          popup.push(new Popup('Specials', this.images['3'].img));
+          popup.push(new Popup('Specials', this.images['7'].img));
           ACHIEVEMENTS_UNLOCKED[1][3] = true;
           ACHIEVEMENTS_STATUS[1][3] = true;
           break;
@@ -266,7 +266,7 @@ class Achievement extends Screen {
       if (!ACHIEVEMENTS_UNLOCKED[0][i]) {
         let achievement_title = 'Beat the game';
         if (i !== 0) achievement_title = `Beat the game x${i + 1}`;
-        popup.push(new Popup(achievement_title, this.images[str(4 + i)].img));
+        popup.push(new Popup(achievement_title, this.images[str(i)].img));
         ACHIEVEMENTS_UNLOCKED[0][i] = true;
         ACHIEVEMENTS_STATUS[0][i] = true;
         break;
@@ -298,25 +298,25 @@ class Achievement extends Screen {
     }
 
     if (!ACHIEVEMENTS_UNLOCKED[3][0] &&
-      word === 'guide') {
+      word === 'sniper') {
       ACHIEVEMENTS_UNLOCKED[3][0] = true;
       ACHIEVEMENTS_STATUS[3][0] = true;
-      popup.push(new Popup('angel', this.images['12'].img));
-    } else if (!ACHIEVEMENTS_UNLOCKED[2][1] &&
+      popup.push(new Popup('Sniper', this.images['12'].img));
+    } else if (!ACHIEVEMENTS_UNLOCKED[3][1] &&
       word === 'banzai') {
       ACHIEVEMENTS_UNLOCKED[3][1] = true;
       ACHIEVEMENTS_STATUS[3][1] = true;
-      popup.push(new Popup('', this.images['13'].img));
-    } else if (!ACHIEVEMENTS_UNLOCKED[2][2] &&
+      popup.push(new Popup('Banzai', this.images['13'].img));
+    } else if (!ACHIEVEMENTS_UNLOCKED[3][2] &&
       word === 'bomb') {
       ACHIEVEMENTS_UNLOCKED[3][2] = true;
       ACHIEVEMENTS_STATUS[3][2] = true;
-      popup.push(new Popup('', this.images['14'].img));
-    } else if (!ACHIEVEMENTS_UNLOCKED[2][3] &&
+      popup.push(new Popup('Explosions', this.images['14'].img));
+    } else if (!ACHIEVEMENTS_UNLOCKED[3][3] &&
       word === 'laser') {
       ACHIEVEMENTS_UNLOCKED[3][3] = true;
       ACHIEVEMENTS_STATUS[3][3] = true;
-      popup.push(new Popup('', this.images['15'].img));
+      popup.push(new Popup('Laser', this.images['15'].img));
     }
 
     if (

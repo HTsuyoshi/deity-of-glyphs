@@ -105,6 +105,10 @@ class Battle extends Screen {
       enemy_alphabet = enemy_alphabet.concat(SPECIALS);
     }
 
+    const word = get_team_word();
+
+    if (word === 'sniper') enemy_qty--;
+
     for (const c of enemy_alphabet.sort(() => 0.5 - Math.random()).slice(0, enemy_qty))
       enemy_team.push(new Char(ENEMY_TEAM, c));
 
@@ -127,7 +131,34 @@ class Battle extends Screen {
       }
     }
 
-    const word = get_team_word();
+    if (this.wave > (WAVE_QUANTITY - 1)) {
+      let angel = false;
+      for (const v of enemy_team) {
+        let enemy_weapon = (angel) ? [
+          ATTACK_AUTO,
+          ATTACK_SEMI_AUTO,
+          ATTACK_SHOTGUN,
+          ATTACK_KAMIKAZE,
+          ATTACK_LASER,
+          ATTACK_EXPLOSIONS,
+          ATTACK_SNIPER,
+        ] : [
+          ATTACK_AUTO,
+          ATTACK_SEMI_AUTO,
+          ATTACK_SHOTGUN,
+          ATTACK_KAMIKAZE,
+          ATTACK_LASER,
+          ATTACK_EXPLOSIONS,
+          ATTACK_SNIPER,
+          ATTACK_ANGEL
+        ];
+
+        v.attributes.weapon = random(enemy_weapon);
+        v.attributes.ammo = 10;
+        if (v.attributes.weapon === ATTACK_ANGEL) angel = true;
+      }
+    }
+
 
     if (word === 'italic') {
       for (const e of enemy_team)
@@ -174,7 +205,7 @@ class Battle extends Screen {
 
       char.attributes.pos = createVector(
         WINDOW_LEFT + ((i + 1) * off_x),
-        ((height * .25) + order[trait]) * (player_team ? -1 : 1)
+        ((height * .25) + order[trait]) * (player_team ? 1 : -1)
       );
 
       entities.push(local_team[i]);
@@ -288,6 +319,7 @@ class Battle extends Screen {
     for (const v of entities) v.update();
     for (const v of bullets) v.update();
     for (const v of particles) v.update();
+    if (particles .length > 100) particles.splice(0, particles.length - 100);
   }
   
   resize () { 

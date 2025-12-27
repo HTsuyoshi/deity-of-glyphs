@@ -183,7 +183,7 @@ class Entity extends Solid {
         break;
       case ATTACK_SNIPER:
         vel = vel
-          .mult(this.all_damage);
+          .mult(min(this.all_damage, 10));
         bullet = new Bullet(
           this.attributes.team,
           this.all_damage * this.all_ammo,
@@ -208,7 +208,7 @@ class Entity extends Solid {
       default:
         vel = vel
           .rotate(random(-QUARTER_PI, QUARTER_PI))
-          .mult(this.all_damage);
+          .mult(min(this.all_damage, 10));
         bullet = new Bullet(
           this.attributes.team,
           this.all_damage,

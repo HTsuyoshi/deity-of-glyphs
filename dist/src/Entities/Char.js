@@ -50,7 +50,6 @@ class Char extends Entity {
           dolls_list.push(doll);
           entities.push(doll);
         }
-        console.log(dolls_list);
         this.dolls.push(dolls_list);
       }
     }
