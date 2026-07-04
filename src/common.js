@@ -1,5 +1,5 @@
 // Constants
-const DOG_VERSION = 'v1.0.0'
+const DOG_VERSION = 'v1.0.1'
       STATE_MENU = 0,
       STATE_TEAM_EDITOR = 1,
       STATE_TEAM_EDITOR_INFO = 2,

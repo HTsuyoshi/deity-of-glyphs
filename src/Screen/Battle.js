@@ -13,7 +13,13 @@ class Battle extends Screen {
       enemy: 1.0,
     };
 
+    this.freeze_frame = false;
+
+    this.selected_char = null;
+
     this.infinite_run = true;
+
+    this.crosshair_imgs = [];
 
     this.layer = null;
     this.layer_img = null;
@@ -58,6 +64,98 @@ class Battle extends Screen {
     background(MAIN_COLOR);
     this.layer.end();
     this.layer_img = this.layer.get();
+
+    const crosshair_size = CHARACTER_SIZE * 2.5;
+    const COLORS_RANDOM = [
+      color(100, 255, 100),
+      color(100, 255, 255),
+      color(255, 100, 100),
+      color(255, 255, 100),
+      color(100, 100, 255),
+      color(255, 100, 255),
+      color(255, 255, 255),
+    ];
+    for (let i=0; i<COLORS_RANDOM.length; i++) {
+      this.crosshair_imgs.push(createGraphics(windowWidth * 2, windowHeight * 2));
+      this.crosshair_imgs[i].strokeJoin(MITER);
+      this.crosshair_imgs[i].stroke(COLORS_RANDOM[i]);
+      this.crosshair_imgs[i].noFill();
+
+      // Cross 2
+      this.crosshair_imgs[i].strokeWeight(4);
+      // Top
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .25),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5)
+      );
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .25),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5)
+      );
+
+      // Bottom
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .25),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .5)
+      );
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .25),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .5)
+      );
+
+      // Left
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .25),
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5)
+      );
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .25),
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .5)
+      );
+
+      // Right
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .25),
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5)
+      );
+      this.crosshair_imgs[i].line(
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .25),
+        (this.crosshair_imgs[i].width * .5) + (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) + (crosshair_size * .5)
+      );
+
+      // Cross 1
+      this.crosshair_imgs[i].strokeWeight(1);
+      this.crosshair_imgs[i].line(0, this.crosshair_imgs[i].height * .5, (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5), this.crosshair_imgs[i].height * .5);
+      this.crosshair_imgs[i].line((this.crosshair_imgs[i].width * .5) + (crosshair_size * .5), this.crosshair_imgs[i].height * .5, this.crosshair_imgs[i].width, this.crosshair_imgs[i].height * .5);
+      this.crosshair_imgs[i].line(this.crosshair_imgs[i].width * .5, 0, this.crosshair_imgs[i].width * .5, (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5));
+      this.crosshair_imgs[i].line(this.crosshair_imgs[i].width * .5, this.crosshair_imgs[i].height, this.crosshair_imgs[i].width * .5, (this.crosshair_imgs[i].height * .5) + (crosshair_size * .5));
+      this.crosshair_imgs[i].square(
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5),
+        crosshair_size);
+      this.crosshair_imgs[i].strokeWeight(2);
+      this.crosshair_imgs[i].square(
+        (this.crosshair_imgs[i].width * .5) - (crosshair_size * .5 * 1.2),
+        (this.crosshair_imgs[i].height * .5) - (crosshair_size * .5 * 1.2),
+        crosshair_size * 1.2);
+    }
+
     this.resize();
   }
 
@@ -132,17 +230,8 @@ class Battle extends Screen {
     }
 
     if (this.wave > (WAVE_QUANTITY - 1)) {
-      let angel = false;
       for (const v of enemy_team) {
-        let enemy_weapon = (angel) ? [
-          ATTACK_AUTO,
-          ATTACK_SEMI_AUTO,
-          ATTACK_SHOTGUN,
-          ATTACK_KAMIKAZE,
-          ATTACK_LASER,
-          ATTACK_EXPLOSIONS,
-          ATTACK_SNIPER,
-        ] : [
+        let enemy_weapon = [
           ATTACK_AUTO,
           ATTACK_SEMI_AUTO,
           ATTACK_SHOTGUN,
@@ -152,10 +241,8 @@ class Battle extends Screen {
           ATTACK_SNIPER,
           ATTACK_ANGEL
         ];
-
         v.attributes.weapon = random(enemy_weapon);
         v.attributes.ammo = 10;
-        if (v.attributes.weapon === ATTACK_ANGEL) angel = true;
       }
     }
 
@@ -275,34 +362,108 @@ class Battle extends Screen {
       return;
     }
 
-    for (const v of team) 
-      if (v.mouseClicked()) return;
-
-    if (!this.pause && this.pause_btn.hover()) {
-      this.freeze();
-      this.pause = true;
-      return STATE_BATTLE_MENU;
+    if (this.pause) {
+      if (this.selected_char !== null) {
+        this.selected_char.attributes.pos.x = MOUSE_X;
+        this.selected_char.attributes.pos.y = MOUSE_Y;
+        entities.push(this.selected_char);
+        this.pause = false;
+        this.selected_char.hover_animation = false;
+        this.selected_char = null;
+        return;
+      }
     }
 
-    if (!this.pause && this.view_team_btn.hover()) {
-      this.freeze();
-      this.pause = true;
-      return STATE_TEAM_VIEW;
+    if (!this.pause) {
+      const hover_chars = team_battlefield.filter(v => v.hover());
+      if (hover_chars.length > 0) {
+        this.selected_char = hover_chars[0];
+        this.freeze_frame = true;
+        const i = entities.indexOf(this.selected_char);
+        entities.splice(i, 1);
+        return;
+      }
+
+      if (this.pause_btn.hover()) {
+        this.freeze_frame = true;
+        return STATE_BATTLE_MENU;
+      }
+      if (this.view_team_btn.hover()) {
+        this.freeze_frame = true;
+        return STATE_TEAM_VIEW;
+      }
+    }
+  }
+
+  touchStarted() {
+    super.touchStarted();
+    if (this.pause) {
+      if (this.selected_char !== null) {
+        this.selected_char.attributes.pos.x = MOUSE_X;
+        this.selected_char.attributes.pos.y = MOUSE_Y;
+        entities.push(this.selected_char);
+        this.pause = false;
+        this.selected_char.hover_animation = false;
+        this.selected_char = null;
+        return;
+      }
+    } else {
+      const hover_chars = team_battlefield.filter(v => v.hover());
+      if (hover_chars.length > 0) {
+        this.selected_char = hover_chars[0];
+        this.freeze_frame = true;
+        const i = entities.indexOf(this.selected_char);
+        entities.splice(i, 1);
+        return;
+      }
+    }
+  }
+
+  touchMoved() {
+    super.touchMoved();
+    this.mouseMoved();
+  }
+
+  mouseMoved() {
+    super.mouseMoved();
+    if (!this.pause) {
+      if (this.selected_char !== null) {
+        this.selected_char.hover_animation = false;
+        this.selected_char = null;
+      }
+      const hover_chars = team_battlefield.filter(v => v.hover());
+      if (hover_chars.length > 0) {
+        this.selected_char = hover_chars[0];
+        this.selected_char.hover_animation = true;
+      }
+    } else {
+      if (this.selected_char !== null) {
+        this.selected_char.attributes.pos.x = MOUSE_X;
+        this.selected_char.attributes.pos.y = MOUSE_Y;
+      }
     }
   }
 
   draw() {
-    //push();
-    //textSize(CHARACTER_SIZE * 2);
-    //text(GAME_TITLE, 0, 0);
-    //pop();
     if (this.pause) {
       image(this.layer_img, -this.layer_img.width * .5, -this.layer_img.height * .5);
+      if (this.selected_char !== null) {
+        this.selected_char.draw();
+      }
     } else {
       this.draw_battlefield();
     }
+    if (this.selected_char !== null) {
+      this.crosshair_imgs = shuffle(this.crosshair_imgs);
+      const img = this.crosshair_imgs[0];
+      image(
+        img,
+        this.selected_char.attributes.pos.x - (img.width * .5),
+        this.selected_char.attributes.pos.y - (img.height * .5));
+    }
     super.update();
     if (this.finish) {
+      this.selected_char = null;
       this.draw_finish();
       return;
     }
@@ -315,6 +476,10 @@ class Battle extends Screen {
   }
 
   update() {
+    if (this.freeze_frame) {
+      this.freeze();
+      this.freeze_frame = false;
+    }
     if (this.pause) return;
     for (const v of entities) v.update();
     for (const v of bullets) v.update();
@@ -335,6 +500,7 @@ class Battle extends Screen {
 
   // Draw
   freeze() {
+    this.pause = true;
     this.layer.begin();
     background(MAIN_COLOR);
     this.draw_battlefield();
@@ -374,10 +540,10 @@ class Battle extends Screen {
 
   // Game logic
   finished() {
-    if (entities.length == 0) return;
     let winner = null;
+    if (entities.length === 0) winner = ENEMY_TEAM;
     for (const v of entities) {
-      if (winner == null) {
+      if (winner === null) {
         winner = v.attributes.team;
         continue;
       }
@@ -385,12 +551,11 @@ class Battle extends Screen {
     }
 
     this.wave++;
-    this.pause = true;
     this.start = false;
     this.finish = true;
     this.winner = winner;
     team.forEach((v) => v.restore());
-    this.freeze();
+    this.freeze_frame = true;
   }
 
   reset() {

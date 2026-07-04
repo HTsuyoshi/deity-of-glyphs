@@ -192,7 +192,7 @@ function touchMoved() {
   game.touchMoved();
 }
 
-function touchEnded(){
+function touchEnded() {
   if (SMALL_SCREEN ||
     !MOBILE) return;
   update_mouse();

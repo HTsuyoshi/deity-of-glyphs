@@ -271,7 +271,6 @@ class UpgradeCard extends Prop {
   }
 
   hover() {
-    // TODO: Understand how z axis movement work and do the correct calculations
     if (MOUSE_X > (this.pos.x  - (this.size.x * .6)) &&
       MOUSE_X < (this.pos.x + (this.size.x * .6)) &&
       MOUSE_Y > ((this.pos.y * 1.2) - (this.size.y * .6)) &&

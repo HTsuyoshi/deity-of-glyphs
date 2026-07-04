@@ -12,22 +12,23 @@ class Char extends Entity {
   }
 
   setup() {
-    if (this.attributes.team === PLAYER_TEAM) {
-      //this.attributes.style = STYLE_ITALIC;
-      //this.attributes.max_health = 99999;
-      //this.attributes.ammo = 10;
-      //this.attributes.weapon = random([ATTACK_LASER, ATTACK_EXPLOSIONS, ATTACK_KAMIKAZE, ATTACK_ANGEL]);
-      //this.attributes.weapon = ATTACK_LASER;
-      //this.attributes.weapon = ATTACK_EXPLOSIONS;
-    }
+    // DEBUG
+    //if (this.attributes.team === PLAYER_TEAM) {
+    //  //this.attributes.style = STYLE_ITALIC;
+    //  //this.attributes.max_health = 99999;
+    //  //this.attributes.ammo = 10;
+    //  //this.attributes.weapon = random([ATTACK_LASER, ATTACK_EXPLOSIONS, ATTACK_KAMIKAZE, ATTACK_ANGEL]);
+    //  //this.attributes.weapon = ATTACK_LASER;
+    //  //this.attributes.weapon = ATTACK_EXPLOSIONS;
+    //}
+    //if (this.attributes.team === ENEMY_TEAM) {
+    //  ///this.attributes.ammo = 30;
+    //  ///this.attributes.max_health = 99999;
+    //  ///this.attributes.health = 99999;
+    //  //this.attributes.weapon = ATTACK_LASER;
+    //  //this.attributes.weapon = ATTACK_EXPLOSIONS;
+    //}
 
-    if (this.attributes.team === ENEMY_TEAM) {
-      ///this.attributes.ammo = 30;
-      ///this.attributes.max_health = 99999;
-      ///this.attributes.health = 99999;
-      //this.attributes.weapon = ATTACK_LASER;
-      //this.attributes.weapon = ATTACK_EXPLOSIONS;
-    }
     if (this.attributes.weapon === ATTACK_ANGEL) {
       this.animation.spin_animation = 0;
       this.spin_animation_vel = 1;
@@ -80,8 +81,7 @@ class Char extends Entity {
 
     // Walk
     if (this.attributes.action.name === ACTION_WALK) {
-      if (this.current_animation.ghost_animation >
-        this.animation.ghost_animation) {
+      if (this.current_animation.ghost_animation >= this.animation.ghost_animation) {
         this.ghost.push(this.attributes.pos.copy());
         if (this.ghost.length > GHOST_LENGTH)
           this.ghost.splice(0, 1);
@@ -122,7 +122,6 @@ class Char extends Entity {
       for (let i=0; i<this.dolls[j].length; i++) {
         let pos = createVector(this.attributes.pos.x, this.attributes.pos.y);
         pos.add(this.circle_function(j, i));
-        //doll_list[i].attributes.pos = pos;
         this.dolls[j][i].attributes.pos.add(pos.sub(this.dolls[j][i].attributes.pos).normalize().mult(10));
       }
     }
@@ -131,14 +130,12 @@ class Char extends Entity {
   circle_function(j, i) {
     const functions = [
       {
-        //x: 0,
         x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * i)) * 20,
         y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 100
       },
       {
         x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * i)) * 100,
         y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 20
-        //y: 0
       },
       {
         x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI  / this.dolls_per_circle * i)) * 75,
@@ -148,14 +145,6 @@ class Char extends Entity {
         x: -sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * (i + 1))) * 75,
         y: sin(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 75
       },
-      //{
-      //  x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / this.dolls_per_circle * i)) * 100,
-      //  y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / this.dolls_per_circle * i)) * 100
-      //},
-      //{
-      //  x: sin((this.attributes.action.bar * TWO_PI) + (TWO_PI / 10 * i)) * 100 * sin(this.attributes.action.bar * TWO_PI),
-      //  y: cos(this.attributes.action.bar * TWO_PI + (TWO_PI / 10 * i)) * 100
-      //},
     ];
 
     return createVector(
@@ -233,12 +222,12 @@ class Char extends Entity {
       .sub(this.attributes.pos)
       .normalize()
       .mult(
-        (1 + this.current_animation.fire_delay) ** 3
+        (1 + this.current_animation.fire_delay ) ** 3
       );
     if (this.current_animation.fire_delay < this.animation.fire_delay) this.attributes.vel.sub(acc);
     else this.attributes.vel.add(acc);
 
-    if (this.current_animation.particle_animation > this.animation.particle_animation) {
+    if (this.current_animation.particle_animation >= this.animation.particle_animation) {
       for (let i=0; i<round(random(1, 3)); i++) {
         const particle = new TrailParticle(
           this.attributes.pos.copy(),

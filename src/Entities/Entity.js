@@ -25,21 +25,16 @@ class Entity extends Solid {
       show_bar: 3,
       fire_delay: -1,
       particle_animation: .05,
-      ghost_animation: 0.05,
+      ghost_animation: .05,
+      hover_animation: .1,
     };
     this.ghost = [];
     this.block = false;
+    this.hover_animation = false;
     this.restore();
   }
 
   // p5js
-  mouseClicked() {
-    //if (!this.hover()) return;
-    //this.attributes.pos.x = MOUSE_X;
-    //this.attributes.pos.y = MOUSE_Y;
-    //return;
-  }
-
   update() {
     this.update_animations();
 
@@ -55,7 +50,6 @@ class Entity extends Solid {
 
   draw() {
     this.draw_char();
-    if (this.current_animation.show_bar >= this.animation.show_bar) return;
     const alpha = lerp(255, 0, (this.current_animation.show_bar / this.animation.show_bar));
     this.draw_health_bar(alpha);
     this.draw_action_bar(alpha);
@@ -64,7 +58,10 @@ class Entity extends Solid {
   // Draw
   draw_char() {
     push();
-    textSize(CHARACTER_SIZE);
+    if (this.current_animation.hover_animation > 0) {
+      translate(this.attributes.pos.x, this.attributes.pos.y);
+    }
+    textSize(CHARACTER_SIZE * min(1 + (this.current_animation.hover_animation * 10), 2));
 
     let char = this.char;
     switch (this.attributes.style) {
@@ -98,11 +95,12 @@ class Entity extends Solid {
         break;
     }
     SECOND_COLOR.setAlpha(255)
-    text(
-      char,
-      this.attributes.pos.x,
-      this.attributes.pos.y,
-    );
+    if (this.current_animation.hover_animation > 0) {
+      rotate(random_signed() * QUARTER_PI * (this.current_animation.hover_animation * 10));
+      text(char, 0, -CHARACTER_SIZE * .25);
+    } else {
+      text(char, this.attributes.pos.x, this.attributes.pos.y);
+    }
     pop();
   }
 
@@ -145,8 +143,15 @@ class Entity extends Solid {
 
   // Updates
   update_animations() {
-    for (const k in this.animation)
-      this.current_animation[k] += deltaTime / 1000;
+    for (const k in this.animation) {
+      if (k === 'hover_animation' && !this.hover_animation) {
+        if (this.current_animation[k] > 0) this.current_animation[k] -= deltaTime / 1000;
+        else this.current_animation[k] = 0;
+        continue;
+      }
+      if (this.current_animation[k] >= this.animation[k] && this.attributes.weapon !== ATTACK_KAMIKAZE) this.current_animation[k] = this.animation[k];
+      else this.current_animation[k] += deltaTime / 1000;
+    }
   }
 
   // Game Logic
@@ -300,10 +305,12 @@ class Entity extends Solid {
       fire_delay: 0,
       particle_animation: 0,
       ghost_animation: 0,
+      hover_animation: 0
     };
   }
 
   hover() {
+    if (!this.alive()) return false;
     if (MOUSE_X > (this.attributes.pos.x - (CHARACTER_SIZE * .5)) &&
         MOUSE_X < (this.attributes.pos.x + (CHARACTER_SIZE * .5)) &&
         MOUSE_Y > (this.attributes.pos.y - (CHARACTER_SIZE * .5)) &&

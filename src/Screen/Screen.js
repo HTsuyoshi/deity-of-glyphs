@@ -31,13 +31,13 @@ class Screen {
 
   mouseClicked () {}
   mouseMoved () {
-    for (const v of Object.values(this.buttons)) v.mouseMoved()
+    for (const v of Object.values(this.buttons)) v.mouseMoved();
   }
   
-  touchStarted() { for (const v of Object.values(this.buttons)) v.touchStarted() }
-  touchMoved() { for (const v of Object.values(this.buttons)) v.touchMoved() }
+  touchStarted() { for (const v of Object.values(this.buttons)) v.touchStarted(); }
+  touchMoved() { for (const v of Object.values(this.buttons)) v.touchMoved(); }
   touchEnded() { 
-    for (const v of Object.values(this.buttons)) v.touchEnded()
+    for (const v of Object.values(this.buttons)) v.touchEnded();
     return this.mouseClicked();
   }
 
